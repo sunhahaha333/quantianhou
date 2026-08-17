@@ -172,9 +172,11 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
 <header>
   <div>
     <h1><span class="star">★</span>派大星全天候配置</h1>
-    <div class="sub">V4.36 · 线上版</div>
   </div>
-  <span id="liveBadge" class="badge warn">行情加载中…</span>
+  <div style="text-align:right">
+    <span id="liveBadge" class="badge warn">行情加载中…</span>
+    <div style="font-size:10px;color:var(--sub);margin-top:2px">V4.37</div>
+  </div>
 </header>
 
 <!-- ========== Tab1 持仓 ========== -->
@@ -352,8 +354,9 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
 </div>
 
-<script>var PAGE_VERSION='v4.36';
+<script>var PAGE_VERSION='v4.37';
 var LS_KEY='paistar_v42';
+var DEFAULT_SYNC_KEY='PT3kN0uaDxK2YXLmpcD6Mxu9';
 var POS=[
  {key:'hs300',  name:'沪深300',  sym:'sh510300', leg:'hs300', kind:'etf', timed:1, color:'#4da3ff'},
  {key:'zz500',  name:'中证500',  sym:'sh510500', leg:'zz500', kind:'etf', timed:1, color:'#a78bfa'},
@@ -373,7 +376,7 @@ var calMode='day',calY=new Date().getFullYear(),calM=new Date().getMonth();
 var pendingImport=null;
 
 function defaults(){
-  return {settings:{maN:250,volCap:12,volRestore:10,fundCode:'040046',startDate:'',refreshSec:15,dcaBase:500,syncKey:'PT3kN0uaDxK2YXLmpcD6Mxu9'},
+  return {schema:1,settings:{maN:250,volCap:12,volRestore:10,fundCode:'040046',startDate:'',refreshSec:15,dcaBase:500,syncKey:DEFAULT_SYNC_KEY},
     positions:{
       hs300:{shares:0,cost:0},zz500:{shares:0,cost:0},
       ndx_etf:{shares:0,cost:0},ndx_otc:{value:0,cost:0},
@@ -407,15 +410,27 @@ function yearStart(s){var d=new Date(s+'T00:00:00');return d.getFullYear()+'-01-
 function pad2(n){return ('0'+n).slice(-2);}
 
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){}scheduleSync();}
+function normalizeData(raw){
+  var d=defaults();
+  var out={schema:raw.schema||1,settings:Object.assign({},d.settings,raw.settings||{}),positions:Object.assign({},d.positions,raw.positions||{}),snapshots:Array.isArray(raw.snapshots)?raw.snapshots.slice():[],otc:Object.assign({funds:[],dayPnl:0,updatedAt:''},raw.otc||{}),demo:raw.demo||0,updatedAt:raw.updatedAt||0};
+  POS.forEach(function(p){
+    var v=out.positions[p.key]||{};
+    if(p.kind==='otc'){if(typeof v.value!=='number')v.value=0;if(typeof v.cost!=='number')v.cost=0;}
+    else{if(typeof v.shares!=='number')v.shares=0;if(typeof v.cost!=='number')v.cost=0;}
+    out.positions[p.key]=v;
+  });
+  out.snapshots=out.snapshots.map(function(sn){
+    var pp={};POS.forEach(function(p){pp[p.key]=Object.assign({},(sn.pos&&sn.pos[p.key])||{});});
+    return {date:sn.date,pos:pp,costTotal:typeof sn.costTotal==='number'?sn.costTotal:0};
+  });
+  if(!out.settings.syncKey)out.settings.syncKey=DEFAULT_SYNC_KEY;
+  return out;
+}
+
 function loadLocal(){
   try{
     var t=localStorage.getItem(LS_KEY);
-    if(t){var p=JSON.parse(t);
-      if(p&&p.settings){var d=defaults();S={settings:Object.assign(d.settings,p.settings),positions:Object.assign(d.positions,p.positions||{}),snapshots:p.snapshots||[],otc:Object.assign({funds:[],dayPnl:0,updatedAt:''},p.otc||{}),demo:p.demo||0,updatedAt:p.updatedAt||0};
-        if(!S.settings.syncKey)S.settings.syncKey='PT3kN0uaDxK2YXLmpcD6Mxu9';
-        if(S.positions.ndx_otc&&!S.positions.ndx_otc.value){S.positions.ndx_otc={value:S.positions.ndx_otc.shares||0,cost:S.positions.ndx_otc.cost||0};}
-      }
-    }
+    if(t){var p=JSON.parse(t);if(p&&p.settings){S=normalizeData(p);}}
   }catch(e){}
 }
 
@@ -1292,7 +1307,7 @@ function cloudPull(){
   var el=$('syncMsg');
   cloudRead().then(function(c){
     if(c&&c.settings){
-      if(c.updatedAt>S.updatedAt){S=c;saveLocal();renderAll();if(el)el.textContent='已从云端恢复(云端较新)';}
+      if(c.updatedAt>S.updatedAt){S=normalizeData(c);saveLocal();renderAll();if(el)el.textContent='已从云端恢复(云端较新)';}
       else{if(el)el.textContent='云端无更新，本地已最新';cloudWrite(S);}
     }else if(c&&c.err){if(el)el.textContent='读取云端失败(检查网络)';}
     else{if(el)el.textContent='云端为空，已上传本地数据';cloudWrite(S);}
