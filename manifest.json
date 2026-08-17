@@ -1,6 +1,6 @@
 {
   "name": "派大星全天候配置",
-  "short_name": "派大星",
+  "short_name": "派大星全天候配置",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0b0f14",
