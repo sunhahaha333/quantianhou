@@ -172,7 +172,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
 <header>
   <div>
     <h1><span class="star">★</span>派大星全天候配置</h1>
-    <div class="sub">V4.35 · 线上版</div>
+    <div class="sub">V4.36 · 线上版</div>
   </div>
   <span id="liveBadge" class="badge warn">行情加载中…</span>
 </header>
@@ -352,7 +352,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
 </div>
 
-<script>var PAGE_VERSION='v4.35';
+<script>var PAGE_VERSION='v4.36';
 var LS_KEY='paistar_v42';
 var POS=[
  {key:'hs300',  name:'沪深300',  sym:'sh510300', leg:'hs300', kind:'etf', timed:1, color:'#4da3ff'},
@@ -373,7 +373,7 @@ var calMode='day',calY=new Date().getFullYear(),calM=new Date().getMonth();
 var pendingImport=null;
 
 function defaults(){
-  return {settings:{maN:250,volCap:12,volRestore:10,fundCode:'040046',startDate:'',refreshSec:15,dcaBase:500,syncKey:''},
+  return {settings:{maN:250,volCap:12,volRestore:10,fundCode:'040046',startDate:'',refreshSec:15,dcaBase:500,syncKey:'PT3kN0uaDxK2YXLmpcD6Mxu9'},
     positions:{
       hs300:{shares:0,cost:0},zz500:{shares:0,cost:0},
       ndx_etf:{shares:0,cost:0},ndx_otc:{value:0,cost:0},
@@ -412,6 +412,7 @@ function loadLocal(){
     var t=localStorage.getItem(LS_KEY);
     if(t){var p=JSON.parse(t);
       if(p&&p.settings){var d=defaults();S={settings:Object.assign(d.settings,p.settings),positions:Object.assign(d.positions,p.positions||{}),snapshots:p.snapshots||[],otc:Object.assign({funds:[],dayPnl:0,updatedAt:''},p.otc||{}),demo:p.demo||0,updatedAt:p.updatedAt||0};
+        if(!S.settings.syncKey)S.settings.syncKey='PT3kN0uaDxK2YXLmpcD6Mxu9';
         if(S.positions.ndx_otc&&!S.positions.ndx_otc.value){S.positions.ndx_otc={value:S.positions.ndx_otc.shares||0,cost:S.positions.ndx_otc.cost||0};}
       }
     }
@@ -1305,6 +1306,7 @@ function init(){
   loadLocal();
   var sk=$('syncKey');if(sk)sk.value=S.settings.syncKey||'';
   if(S.settings.syncKey){cloudPull();}
+  setInterval(function(){if(!editing)cloudPull();},60000);
   renderAll();
   refreshMarket();
   document.querySelectorAll('.tabbar button').forEach(function(b){b.addEventListener('click',function(){switchTab(b.getAttribute('data-t'));});});
