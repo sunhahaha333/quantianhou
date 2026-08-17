@@ -175,7 +175,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
   <div style="text-align:right">
     <span id="liveBadge" class="badge warn">行情加载中…</span>
-    <div style="font-size:10px;color:var(--sub);margin-top:2px">V4.37</div>
+    <div style="font-size:10px;color:var(--sub);margin-top:2px">V4.38</div>
   </div>
 </header>
 
@@ -354,13 +354,12 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
 </div>
 
-<script>var PAGE_VERSION='v4.37';
+<script>var PAGE_VERSION='v4.39';
 var LS_KEY='paistar_v42';
 var DEFAULT_SYNC_KEY='PT3kN0uaDxK2YXLmpcD6Mxu9';
 var POS=[
  {key:'hs300',  name:'沪深300',  sym:'sh510300', leg:'hs300', kind:'etf', timed:1, color:'#4da3ff'},
  {key:'zz500',  name:'中证500',  sym:'sh510500', leg:'zz500', kind:'etf', timed:1, color:'#a78bfa'},
- {key:'ndx_etf',name:'纳指·场内',sym:'sh513100', leg:'ndx',   kind:'etf',        color:'#ff9f43'},
  {key:'ndx_otc',name:'纳指·场外',leg:'ndx',      kind:'otc',                    color:'#ffb86b'},
  {key:'gold',   name:'黄金',     sym:'sh518880', leg:'gold',  kind:'etf',        color:'#f0b90b'},
  {key:'bond',   name:'国债',     sym:'sh511010', leg:'bond',  kind:'etf',        color:'#2dd4bf'}
@@ -379,7 +378,7 @@ function defaults(){
   return {schema:1,settings:{maN:250,volCap:12,volRestore:10,fundCode:'040046',startDate:'',refreshSec:15,dcaBase:500,syncKey:DEFAULT_SYNC_KEY},
     positions:{
       hs300:{shares:0,cost:0},zz500:{shares:0,cost:0},
-      ndx_etf:{shares:0,cost:0},ndx_otc:{value:0,cost:0},
+      ndx_otc:{value:0,cost:0},
       gold:{shares:0,cost:0},bond:{shares:0,cost:0}},
     snapshots:[],otc:{funds:[],dayPnl:0,updatedAt:''},demo:0,updatedAt:0};
 }
@@ -419,9 +418,15 @@ function normalizeData(raw){
     else{if(typeof v.shares!=='number')v.shares=0;if(typeof v.cost!=='number')v.cost=0;}
     out.positions[p.key]=v;
   });
+  delete out.positions.ndx_etf;
   out.snapshots=out.snapshots.map(function(sn){
     var pp={};POS.forEach(function(p){pp[p.key]=Object.assign({},(sn.pos&&sn.pos[p.key])||{});});
-    return {date:sn.date,pos:pp,costTotal:typeof sn.costTotal==='number'?sn.costTotal:0};
+    delete pp.ndx_etf;
+    var ct=0;POS.forEach(function(p){
+      var v=pp[p.key]||{};
+      ct+=(p.kind==='otc')?(v.cost||0):((v.shares||0)*(v.cost||0));
+    });
+    return {date:sn.date,pos:pp,costTotal:ct};
   });
   if(!out.settings.syncKey)out.settings.syncKey=DEFAULT_SYNC_KEY;
   return out;
@@ -506,7 +511,13 @@ function dayPriceBefore(k){
 function posOf(k){return S.positions[k]||{};}
 function shares(k){var p=posOf(k);return p.shares||0;}
 function costOf(k){return posOf(k).cost||0;}
-function totalCost(){var s=0;POS.forEach(function(p){s+=costOf(p.key);});return s;}
+function posCost(k){
+  var p=null;for(var i=0;i<POS.length;i++)if(POS[i].key===k)p=POS[i];
+  if(!p)return 0;
+  if(p.kind==='otc')return posOf(k).cost||0;   /* 场外纳指：成本字段=总成本 */
+  return shares(k)*costOf(k);                   /* 场内ETF：成本字段=成本价(单价) */
+}
+function totalCost(){var s=0;POS.forEach(function(p){s+=posCost(p.key);});return s;}
 function posVal(k){
   var p=null;for(var i=0;i<POS.length;i++)if(POS[i].key===k)p=POS[i];
   if(!p)return 0;
@@ -521,7 +532,7 @@ function posDayPnl(k){
 }
 function legVal(leg){var s=0;POS.forEach(function(p){if(p.leg===leg)s+=posVal(p.key);});return s;}
 function legDayPnl(leg){var s=0;POS.forEach(function(p){if(p.leg===leg)s+=posDayPnl(p.key);});return s;}
-function legCost(leg){var s=0;POS.forEach(function(p){if(p.leg===leg)s+=costOf(p.key);});return s;}
+function legCost(leg){var s=0;POS.forEach(function(p){if(p.leg===leg)s+=posCost(p.key);});return s;}
 function totalValue(){var s=0;LEGS.forEach(function(l){s+=legVal(l.key);});return s;}
 function todayPnl(){var s=0;POS.forEach(function(p){s+=posDayPnl(p.key);});return s;}
 
@@ -618,20 +629,22 @@ function dailyReturns(){
   var out=[];
   for(var i=1;i<ser.length;i++){
     if(!kd[ser[i].date])continue;
-    out.push({date:ser[i].date,ret:ser[i].nav/ser[i-1].nav-1,amt:(ser[i].nav/ser[i-1].nav-1)*ser[i-1].value});
+    var amt=ser[i].value-ser[i-1].value;
+    out.push({date:ser[i].date,ret:ser[i-1].value>0?amt/ser[i-1].value:0,amt:amt});
   }
   var today=todayStr();
   var dw=(new Date(today+'T00:00:00')).getDay();
-  if(dw>=1&&dw<=5&&ser.length){
-    var last=ser[ser.length-1],tv=totalValue();
-    if(tv>0&&last.value>0){
-      var p={date:today,ret:tv/last.value-1,amt:tv-last.value};
+  if(dw>=1&&dw<=5){
+    var dp=todayPnl(),tv=totalValue(),prevVal=tv-dp;
+    if(prevVal>0){
+      var p={date:today,ret:dp/prevVal,amt:dp};
       var ex=-1;for(var k=0;k<out.length;k++)if(out[k].date===today)ex=k;
       if(ex>=0)out[ex]=p;else out.push(p);
     }
   }
   return out;
 }
+
 
 
 
@@ -815,7 +828,7 @@ function renderPie(){
 function renderHoldings(){
   var tv=totalValue(),h='';
   if(editing){
-    h='<table class="tbl"><tr><th>资产</th><th>份额/市值</th><th>成本(元)</th></tr>';
+    h='<table class="tbl"><tr><th>资产</th><th>份额/市值</th><th>成本价/总成本</th></tr>';
     POS.forEach(function(p){
       if(p.kind==='otc'){
         h+='<tr><td><span class="dot" style="background:'+p.color+'"></span>'+p.name+'<br><span class="s">市值直填</span></td>'+
@@ -827,7 +840,7 @@ function renderHoldings(){
           '<td><input id="pos_'+p.key+'_c" type="number" step="any" value="'+fmt(costOf(p.key),0)+'" style="width:92px"></td></tr>';
       }
     });
-    h+='</table>';
+    h+='</table><div class="muted" style="margin:6px 2px">场内填成本价(元/份) · 纳指场外填总成本(元)</div>';
     $('holdTbl').innerHTML=h;
     $('saveBar').style.display='flex';
     $('editBtn').textContent='✔ 完成';
@@ -841,15 +854,16 @@ function renderHoldings(){
     var color=(l.key==='hs300')?'#4da3ff':(l.key==='zz500')?'#a78bfa':(l.key==='ndx')?'#ff9f43':(l.key==='gold')?'#f0b90b':'#2dd4bf';
     var chev=(l.key==='ndx')?'<span class="chv" onclick="toggleNdx()">'+(ndxOpen?'▾':'▸')+'</span>':'';
     var px=legPrice(l.key);
+    var isNdx=l.key==='ndx';
     h+='<tr>'+
       '<td class="ast-nm"><span class="dot" style="background:'+color+'"></span>'+l.name+chev+'<span class="s">'+fmtMoney(lv)+'</span></td>'+
-      '<td class="l2"><span>'+fmt(px,3)+'</span><span class="s">'+fmtMoney(lc)+'</span></td>'+
+      '<td class="l2"><span>'+(isNdx?'—':fmt(px,3))+'</span><span class="s">'+(isNdx?'—':fmtMoney(lc))+'</span></td>'+
       '<td class="l2"><span class="'+dCls+'">'+(dp>=0?'+':'')+fmtMoney(dp)+'</span><span class="s '+dCls+'">'+(dp>=0?'+':'')+fmtPct(dp/(lv-dp||1))+'</span></td>'+
       '<td class="l2"><span class="'+pCls+'">'+(pn>=0?'+':'')+fmtMoney(pn)+'</span><span class="s '+pCls+'">'+(pn>=0?'+':'')+fmtPct(lc>0?pn/lc:0)+'</span></td>'+
       '<td>'+fmtPct(tv>0?lv/tv:0)+'</td></tr>';
     if(l.key==='ndx'&&ndxOpen){
       POS.filter(function(p){return p.leg==='ndx';}).forEach(function(p){
-        var pv=posVal(p.key),pc=costOf(p.key),pd=posDayPnl(p.key),pp=pv-pc;
+        var pv=posVal(p.key),pc=posCost(p.key),pd=posDayPnl(p.key),pp=pv-pc;
         var dC=pd>=0?'up':'dn',pC=pp>=0?'up':'dn';
         var extra='',ob='';
         if(p.kind==='otc'){
@@ -863,7 +877,7 @@ function renderHoldings(){
         var px2=p.kind==='otc'?null:latestPrice(p.key);
         h+='<tr class="sub">'+
           '<td class="ast-nm"><span class="dot" style="background:'+p.color+'"></span>'+p.name+ob+extra+'<span class="s">'+fmtMoney(pv)+'</span></td>'+
-          '<td class="l2"><span>'+(p.kind==='otc'?'—':fmt(px2,3))+'</span><span class="s">'+fmtMoney(pc)+'</span></td>'+
+          '<td class="l2"><span>—</span><span class="s">—</span></td>'+
           '<td class="l2"><span class="'+dC+'">'+(pd>=0?'+':'')+fmtMoney(pd)+'</span><span class="s '+dC+'">'+(pd>=0?'+':'')+fmtPct(pd/(pv-pd||1))+'</span></td>'+
           '<td class="l2"><span class="'+pC+'">'+(pp>=0?'+':'')+fmtMoney(pp)+'</span><span class="s '+pC+'">'+(pp>=0?'+':'')+fmtPct(pc>0?pp/pc:0)+'</span></td>'+
           '<td>'+fmtPct(tv>0?pv/tv:0)+'</td></tr>';
@@ -903,7 +917,10 @@ function savePos(){
     }
   });
   if(sd===todayStr()){S.positions=JSON.parse(JSON.stringify(snapPos));}
-  var snapCost=0;POS.forEach(function(p){snapCost+=(snapPos[p.key].cost||0);});
+  var snapCost=0;POS.forEach(function(p){
+    var pp=snapPos[p.key]||{};
+    snapCost+=(p.kind==='otc')?(pp.cost||0):((pp.shares||0)*(pp.cost||0));
+  });
   var snap={date:sd,pos:snapPos,costTotal:snapCost};
   var replaced=false;
   S.snapshots.forEach(function(s,i){if(s.date===sd){S.snapshots[i]=snap;replaced=true;}});
@@ -1192,7 +1209,6 @@ function closeImp(){$('impMask').style.display='none';}
 function parseImport(text){
   var KEYS=[
     {k:'hs300',ws:['沪深300','510300']},{k:'zz500',ws:['中证500','510500']},
-    {k:'ndx_etf',ws:['纳指场内','纳指·场内','场内纳指','513100']},
     {k:'ndx_otc',ws:['纳指场外','纳指·场外','场外纳指','040046','且慢']},
     {k:'gold',ws:['黄金','518880']},{k:'bond',ws:['国债','511010']}
   ];
@@ -1248,7 +1264,10 @@ function confirmImport(){
   S.otc={funds:q.funds.map(function(f){return {name:f.name,value:Math.round(f.value*100)/100,dayPct:f.dayPct,pnlPct:f.pnlPct};}),dayPnl:q.dayPnl,updatedAt:todayStr()};
   var snapPos=JSON.parse(JSON.stringify(S.positions));
   snapPos.ndx_otc=JSON.parse(JSON.stringify(imported));
-  var snapCost=0;POS.forEach(function(p){snapCost+=(snapPos[p.key].cost||0);});
+  var snapCost=0;POS.forEach(function(p){
+    var pp=snapPos[p.key]||{};
+    snapCost+=(p.kind==='otc')?(pp.cost||0):((pp.shares||0)*(pp.cost||0));
+  });
   var snap={date:impDate,pos:snapPos,costTotal:snapCost};
   var replaced=false;
   S.snapshots.forEach(function(s,i){if(s.date===snap.date){S.snapshots[i]=snap;replaced=true;}});
