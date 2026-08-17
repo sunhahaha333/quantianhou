@@ -173,6 +173,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
 </style>
 </head>
 <body><div id="bootMsg" style="background:#3a2c14;color:#ffd78a;font-size:12px;padding:8px 12px;border-radius:10px;margin:8px 0">⏳ 正在加载…<br>若长时间空白：请在手机<b>系统浏览器（Safari/Chrome）</b>打开本文件，勿用微信内置浏览器（会拦截脚本）；或部署到 GitHub Pages 用网址打开。</div>
+<div id="verMsg" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#2f81f7;color:#fff;text-align:center;font-size:13px;padding:8px;font-weight:600"></div>
 <header>
   <div>
     <h1><span class="star">★</span>派大星全天候配置</h1>
@@ -422,7 +423,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
 </div>
 
-<script>var PAGE_VERSION='v5.1';
+<script>var PAGE_VERSION='v5.2';
 var LS_KEY='paistar_v42';
 var DEFAULT_SYNC_KEY='PT3kN0uaDxK2YXLmpcD6Mxu9';
 var POS=[
@@ -1491,6 +1492,26 @@ function scheduleSync(){
 }
 function cloudRead(){if(!S.settings.syncKey)return Promise.resolve(null);return fetch('https://textdb.online/'+S.settings.syncKey).then(function(r){return r.text();}).then(function(t){if(!t)return null;try{return JSON.parse(t);}catch(e){return null;}}).catch(function(){return {err:true};});}
 function cloudWrite(data){if(!S.settings.syncKey)return Promise.resolve(false);var url='https://textdb.online/update/?key='+S.settings.syncKey+'&value='+encodeURIComponent(JSON.stringify(data));return fetch(url,{method:'POST'}).then(function(r){return r.json();}).then(function(j){return !!(j&&j.status===1);}).catch(function(){return false;});}
+function checkVersion(){
+  var cur=PAGE_VERSION;
+  var url=location.href.split('?')[0];
+  fetch(url+'?__v='+Date.now(),{cache:'no-store'})
+    .then(function(r){return r.text();})
+    .then(function(h){
+      var m=h.match(/PAGE_VERSION\s*=\s*'([^']+)'/);
+      if(!m||m[1]===cur)return;
+      var el=$('verMsg');
+      if(el){
+        el.style.display='block';
+        var link=url+'?v='+m[1];
+        el.innerHTML='📢 发现新版本 '+m[1]+'（当前 '+cur+'），<a style="color:#fff;text-decoration:underline" href="'+link+'">点此更新</a>';
+        if(!sessionStorage.getItem('verJump')){
+          sessionStorage.setItem('verJump','1');
+          setTimeout(function(){location.href=link;},600);
+        }
+      }
+    }).catch(function(){});
+}
 function saveSyncKey(){S.settings.syncKey=($('syncKey').value||'').trim();S.updatedAt=Date.now();saveLocal();if(S.settings.syncKey)cloudPushNow();else{var el=$('syncMsg');if(el)el.textContent='Key已清除(仅本地)';}}
 function cloudPushNow(){cloudWrite(S).then(function(ok){var el=$('syncMsg');if(el)el.textContent=ok?('已上传 '+timeStr()):'上传失败';});}
 function cloudPull(){
@@ -1514,6 +1535,7 @@ function clearAll(){
 function init(){
   var bm=$('bootMsg');if(bm)bm.style.display='none';
   var vt=$('verTag');if(vt)vt.textContent='V'+String(PAGE_VERSION).replace(/^v/i,'');
+  checkVersion();
   loadLocal();
   var sk=$('syncKey');if(sk)sk.value=S.settings.syncKey||'';
   if(S.settings.syncKey){cloudPull();}
