@@ -211,7 +211,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
       <table class="tbl" id="holdTbl"></table>
     </div>
     <div class="rowline" id="saveBar" style="display:none;margin-top:9px">
-      <label class="muted" style="flex:0 0 90px">快照日期<br><input id="snapDate" type="date"></label>
+      <label class="muted" style="flex:0 0 90px">快照日期<br><input id="snapDate" type="date" onchange="fillEditForm(this.value)"></label>
       <button class="pri" style="flex:1" onclick="savePos()">保存</button>
       <button style="flex:1" onclick="cancelEdit()">取消</button>
     </div>
@@ -354,7 +354,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
 </div>
 
-<script>var PAGE_VERSION='v4.41';
+<script>var PAGE_VERSION='v4.43';
 var LS_KEY='paistar_v42';
 var DEFAULT_SYNC_KEY='PT3kN0uaDxK2YXLmpcD6Mxu9';
 var POS=[
@@ -833,13 +833,14 @@ function renderHoldings(){
       if(p.kind==='otc'){return;}
       h+='<tr><td><span class="dot" style="background:'+p.color+'"></span>'+p.name+'</td>'+
         '<td><input id="pos_'+p.key+'_s" type="number" step="any" value="'+shares(p.key)+'" style="width:92px"></td>'+
-        '<td><input id="pos_'+p.key+'_c" type="number" step="any" value="'+fmt(costOf(p.key),0)+'" style="width:92px"></td></tr>';
+        '<td><input id="pos_'+p.key+'_c" type="number" step="any" value="'+fmt(costOf(p.key),3)+'" style="width:92px"></td></tr>';
     });
-    h+='</table>';
+    h+='</table><div id="snapHint" class="muted" style="margin:4px 2px"></div>';
     $('holdTbl').innerHTML=h;
     $('saveBar').style.display='flex';
     $('editBtn').style.display='none';
     var sd=$('snapDate');if(sd)sd.value=todayStr();
+    fillEditForm(sd?sd.value:todayStr());
     return;
   }
   h='<tr><th>资产<br>市值</th><th>现价<br>成本</th><th>当日盈亏</th><th>总盈亏</th><th>占比</th></tr>';
@@ -847,46 +848,32 @@ function renderHoldings(){
     var lv=legVal(l.key),lc=legCost(l.key),dp=legDayPnl(l.key),pn=lv-lc;
     var dCls=dp>=0?'up':'dn',pCls=pn>=0?'up':'dn';
     var color=(l.key==='hs300')?'#4da3ff':(l.key==='zz500')?'#a78bfa':(l.key==='ndx')?'#ff9f43':(l.key==='gold')?'#f0b90b':'#2dd4bf';
+    var chev=(l.key==='ndx')?'<span class="chv" onclick="toggleNdx()">'+(ndxOpen?'▾':'▸')+'</span>':'';
     var px=legPrice(l.key);
     var cp=legCostPrice(l.key);
     var isNdx=l.key==='ndx';
     h+='<tr>'+
-      '<td class="ast-nm"><span class="dot" style="background:'+color+'"></span>'+l.name+'<span class="s">'+fmtMoney(lv)+'</span></td>'+
+      '<td class="ast-nm"><span class="dot" style="background:'+color+'"></span>'+l.name+chev+'<span class="s">'+fmtMoney(lv)+'</span></td>'+
       '<td class="l2"><span>'+(isNdx?'—':fmt(px,3))+'</span><span class="s">'+(isNdx?'—':fmt(cp,3))+'</span></td>'+
       '<td class="l2"><span class="'+dCls+'">'+(dp>=0?'+':'')+fmtMoney(dp)+'</span><span class="s '+dCls+'">'+(dp>=0?'+':'')+fmtPct(dp/(lv-dp||1))+'</span></td>'+
       '<td class="l2"><span class="'+pCls+'">'+(pn>=0?'+':'')+fmtMoney(pn)+'</span><span class="s '+pCls+'">'+(pn>=0?'+':'')+fmtPct(lc>0?pn/lc:0)+'</span></td>'+
       '<td>'+fmtPct(tv>0?lv/tv:0)+'</td></tr>';
-    if(l.key==='ndx'){
-      POS.filter(function(p){return p.leg==='ndx';}).forEach(function(p){
-        var pv=posVal(p.key),pc=posCost(p.key),pd=posDayPnl(p.key),pp=pv-pc;
-        var dC=pd>=0?'up':'dn',pC=pp>=0?'up':'dn';
-        var extra='',ob='';
-        if(p.kind==='otc'){
-          var fr=(S.otc&&S.otc.funds)?S.otc.funds.length:0;
-          var upd=S.otc&&S.otc.updatedAt;
-          if(upd===todayStr())ob='<span class="ob ok">当日已更新</span>';
-          extra='<span class="chv" onclick="toggleOtc()">'+(ndxOtcOpen?'▾':'▸')+'</span><span class="s">'+fr+' 只基金</span>';
-        }else{
-          extra='<span class="s">份额 '+fmtShares(shares(p.key))+'</span>';
-        }
-        var px2=p.kind==='otc'?null:latestPrice(p.key);
-        h+='<tr class="sub">'+
-          '<td class="ast-nm"><span class="dot" style="background:'+p.color+'"></span>'+p.name+ob+extra+'<span class="s">'+fmtMoney(pv)+'</span></td>'+
-          '<td class="l2"><span>—</span><span class="s">—</span></td>'+
-          '<td class="l2"><span class="'+dC+'">'+(pd>=0?'+':'')+fmtMoney(pd)+'</span><span class="s '+dC+'">'+(pd>=0?'+':'')+fmtPct(pd/(pv-pd||1))+'</span></td>'+
-          '<td class="l2"><span class="'+pC+'">'+(pp>=0?'+':'')+fmtMoney(pp)+'</span><span class="s '+pC+'">'+(pp>=0?'+':'')+fmtPct(pc>0?pp/pc:0)+'</span></td>'+
-          '<td>'+fmtPct(tv>0?pv/tv:0)+'</td></tr>';
-        if(p.kind==='otc'&&ndxOtcOpen&&S.otc&&S.otc.funds){
-          S.otc.funds.forEach(function(f){
-            h+='<tr class="sub">'+
-              '<td class="ast-nm" style="padding-left:14px">'+f.name+ob+'<span class="s">'+fmtMoney(f.value)+'</span></td>'+
-              '<td class="l2"><span>—</span><span class="s">—</span></td>'+
-              '<td class="l2"><span class="'+(f.dayPct>=0?'up':'dn')+'">'+fmtPct(f.dayPct/100)+'</span></td>'+
-              '<td class="l2"><span class="'+(f.pnlPct>=0?'up':'dn')+'">'+fmtPct(f.pnlPct/100)+'</span></td>'+
-              '<td>'+fmtPct(tv>0?f.value/tv:0)+'</td></tr>';
-          });
-        }
-      });
+    if(l.key==='ndx'&&ndxOpen){
+      var ob='';
+      if(S.otc&&S.otc.updatedAt===todayStr())ob='<span class="ob ok">当日已更新</span>';
+      var funds=(S.otc&&S.otc.funds)||[];
+      if(funds.length){
+        funds.forEach(function(f){
+          h+='<tr class="sub">'+
+            '<td class="ast-nm" style="padding-left:14px">'+f.name+ob+'<span class="s">'+fmtMoney(f.value)+'</span></td>'+
+            '<td class="l2"><span>—</span><span class="s">—</span></td>'+
+            '<td class="l2"><span class="'+(f.dayPct>=0?'up':'dn')+'">'+fmtPct(f.dayPct/100)+'</span></td>'+
+            '<td class="l2"><span class="'+(f.pnlPct>=0?'up':'dn')+'">'+fmtPct(f.pnlPct/100)+'</span></td>'+
+            '<td>'+fmtPct(tv>0?f.value/tv:0)+'</td></tr>';
+        });
+      }else{
+        h+='<tr class="sub"><td class="ast-nm" style="padding-left:14px" colspan="5"><span class="muted">暂无场外持仓，点右上「📋 导入」粘贴且慢数据</span></td></tr>';
+      }
     }
   });
   $('holdTbl').innerHTML=h;
@@ -899,6 +886,27 @@ function renderHoldings(){
 function toggleNdx(){ndxOpen=!ndxOpen;renderHoldings();}
 function toggleOtc(){ndxOtcOpen=!ndxOtcOpen;renderHoldings();}
 function toggleEdit(){editing=!editing;renderHoldings();}
+function snapForDate(d){
+  if(!S.snapshots)return null;
+  for(var i=0;i<S.snapshots.length;i++)if(S.snapshots[i].date===d)return S.snapshots[i];
+  return null;
+}
+function fillEditForm(d){
+  var sn=snapForDate(d);
+  var src=sn?(sn.pos||{}):S.positions;
+  POS.forEach(function(p){
+    if(p.kind==='otc')return;
+    var v=src[p.key]||{};
+    var e=$('pos_'+p.key+'_s');if(e)e.value=String(v.shares||0);
+    var e2=$('pos_'+p.key+'_c');if(e2)e2.value=fmt((v.cost||0),3);
+  });
+  var hint=$('snapHint');
+  if(hint){
+    if(d===todayStr())hint.textContent='正在编辑今日持仓（保存=更新当前持仓+今日快照）';
+    else if(sn)hint.textContent='已载入 '+d+' 的历史持仓，修改后保存仅更新该日快照';
+    else hint.textContent=d+' 无历史记录，当前显示今日持仓，请改为该日实际持仓后再保存';
+  }
+}
 function savePos(){
   var sdEl=$('snapDate');var sd=(sdEl&&sdEl.value)?sdEl.value:todayStr();
   var snapPos={};
@@ -1327,13 +1335,10 @@ function cloudPull(){
 function exportJson(){var b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='paistar-'+todayStr()+'.json';a.click();}
 function importJson(){var inp=document.createElement('input');inp.type='file';inp.accept='.json';inp.onchange=function(){var f=inp.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){try{var p=JSON.parse(rd.result);if(p&&p.settings){S=p;saveLocal();renderAll();alert('导入成功');}else{alert('格式不对');}}catch(e){alert('解析失败');}};rd.readAsText(f);};inp.click();}
 function clearAll(){
-  if(!confirm('确定重置全部数据？将同时清空本地和云端并归零，不可恢复。'))return;
+  if(!confirm('确定重置全部数据？将清空本地并让云端归零，不可恢复。'))return;
   localStorage.removeItem(LS_KEY);
-  if(S.settings.syncKey){
-    fetch('https://textdb.online/update/?key='+S.settings.syncKey+'&value=',{method:'POST'})
-      .catch(function(){})
-      .then(function(){location.reload();});
-  }else{location.reload();}
+  var d=defaults(); d.updatedAt=Date.now()+1; S=d; saveLocal();
+  location.reload();
 }
 function init(){
   var bm=$('bootMsg');if(bm)bm.style.display='none';
