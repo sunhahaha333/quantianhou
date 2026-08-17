@@ -179,7 +179,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
   <div style="text-align:right">
     <span id="liveBadge" class="badge warn">行情加载中…</span>
-    <div style="font-size:10px;color:var(--sub);margin-top:2px">V4.38</div>
+    <div id="verTag" style="font-size:10px;color:var(--sub);margin-top:2px"></div>
   </div>
 </header>
 
@@ -422,7 +422,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
 </div>
 
-<script>var PAGE_VERSION='v4.47';
+<script>var PAGE_VERSION='v5.1';
 var LS_KEY='paistar_v42';
 var DEFAULT_SYNC_KEY='PT3kN0uaDxK2YXLmpcD6Mxu9';
 var POS=[
@@ -1513,6 +1513,7 @@ function clearAll(){
 }
 function init(){
   var bm=$('bootMsg');if(bm)bm.style.display='none';
+  var vt=$('verTag');if(vt)vt.textContent='V'+String(PAGE_VERSION).replace(/^v/i,'');
   loadLocal();
   var sk=$('syncKey');if(sk)sk.value=S.settings.syncKey||'';
   if(S.settings.syncKey){cloudPull();}
