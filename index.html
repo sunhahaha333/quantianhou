@@ -296,7 +296,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
 
   <details>
-    <summary>云端同步 / 备份 / 清空</summary>
+    <summary>云端同步 / 备份 / 重置</summary>
     <div class="card">
       <div class="rowline">
         <label class="muted" style="flex:1">TextDB 同步Key<br><input id="syncKey" type="text" placeholder="20位以上随机串"></label>
@@ -310,7 +310,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
         <button onclick="importJson()">导入JSON</button>
       </div>
       <div class="rowline">
-        <button style="color:var(--up)" onclick="clearAll()">🗑 清空本地数据</button>
+        <button style="color:var(--up)" onclick="clearAll()">🗑 重置全部（本地+云端归零）</button>
       </div>
       <div id="syncMsg" class="muted"></div>
     </div>
@@ -354,7 +354,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
 </div>
 
-<script>var PAGE_VERSION='v4.40';
+<script>var PAGE_VERSION='v4.41';
 var LS_KEY='paistar_v42';
 var DEFAULT_SYNC_KEY='PT3kN0uaDxK2YXLmpcD6Mxu9';
 var POS=[
@@ -828,22 +828,17 @@ function renderPie(){
 function renderHoldings(){
   var tv=totalValue(),h='';
   if(editing){
-    h='<table class="tbl"><tr><th>资产</th><th>份额/市值</th><th>成本价/总成本</th></tr>';
+    h='<table class="tbl"><tr><th>资产</th><th>份额</th><th>成本价(元)</th></tr>';
     POS.forEach(function(p){
-      if(p.kind==='otc'){
-        h+='<tr><td><span class="dot" style="background:'+p.color+'"></span>'+p.name+'<br><span class="s">市值直填</span></td>'+
-          '<td><input id="pos_'+p.key+'_v" type="number" step="any" value="'+fmt(posOf(p.key).value||0,2)+'" style="width:92px"></td>'+
-          '<td><input id="pos_'+p.key+'_c" type="number" step="any" value="'+fmt(costOf(p.key),0)+'" style="width:92px"></td></tr>';
-      }else{
-        h+='<tr><td><span class="dot" style="background:'+p.color+'"></span>'+p.name+'</td>'+
-          '<td><input id="pos_'+p.key+'_s" type="number" step="any" value="'+shares(p.key)+'" style="width:92px"></td>'+
-          '<td><input id="pos_'+p.key+'_c" type="number" step="any" value="'+fmt(costOf(p.key),0)+'" style="width:92px"></td></tr>';
-      }
+      if(p.kind==='otc'){return;}
+      h+='<tr><td><span class="dot" style="background:'+p.color+'"></span>'+p.name+'</td>'+
+        '<td><input id="pos_'+p.key+'_s" type="number" step="any" value="'+shares(p.key)+'" style="width:92px"></td>'+
+        '<td><input id="pos_'+p.key+'_c" type="number" step="any" value="'+fmt(costOf(p.key),0)+'" style="width:92px"></td></tr>';
     });
-    h+='</table><div class="muted" style="margin:6px 2px">场内填成本价(元/份) · 纳指场外填总成本(元)</div>';
+    h+='</table>';
     $('holdTbl').innerHTML=h;
     $('saveBar').style.display='flex';
-    $('editBtn').textContent='✔ 完成';
+    $('editBtn').style.display='none';
     var sd=$('snapDate');if(sd)sd.value=todayStr();
     return;
   }
@@ -852,17 +847,16 @@ function renderHoldings(){
     var lv=legVal(l.key),lc=legCost(l.key),dp=legDayPnl(l.key),pn=lv-lc;
     var dCls=dp>=0?'up':'dn',pCls=pn>=0?'up':'dn';
     var color=(l.key==='hs300')?'#4da3ff':(l.key==='zz500')?'#a78bfa':(l.key==='ndx')?'#ff9f43':(l.key==='gold')?'#f0b90b':'#2dd4bf';
-    var chev=(l.key==='ndx')?'<span class="chv" onclick="toggleNdx()">'+(ndxOpen?'▾':'▸')+'</span>':'';
     var px=legPrice(l.key);
     var cp=legCostPrice(l.key);
     var isNdx=l.key==='ndx';
     h+='<tr>'+
-      '<td class="ast-nm"><span class="dot" style="background:'+color+'"></span>'+l.name+chev+'<span class="s">'+fmtMoney(lv)+'</span></td>'+
+      '<td class="ast-nm"><span class="dot" style="background:'+color+'"></span>'+l.name+'<span class="s">'+fmtMoney(lv)+'</span></td>'+
       '<td class="l2"><span>'+(isNdx?'—':fmt(px,3))+'</span><span class="s">'+(isNdx?'—':fmt(cp,3))+'</span></td>'+
       '<td class="l2"><span class="'+dCls+'">'+(dp>=0?'+':'')+fmtMoney(dp)+'</span><span class="s '+dCls+'">'+(dp>=0?'+':'')+fmtPct(dp/(lv-dp||1))+'</span></td>'+
       '<td class="l2"><span class="'+pCls+'">'+(pn>=0?'+':'')+fmtMoney(pn)+'</span><span class="s '+pCls+'">'+(pn>=0?'+':'')+fmtPct(lc>0?pn/lc:0)+'</span></td>'+
       '<td>'+fmtPct(tv>0?lv/tv:0)+'</td></tr>';
-    if(l.key==='ndx'&&ndxOpen){
+    if(l.key==='ndx'){
       POS.filter(function(p){return p.leg==='ndx';}).forEach(function(p){
         var pv=posVal(p.key),pc=posCost(p.key),pd=posDayPnl(p.key),pp=pv-pc;
         var dC=pd>=0?'up':'dn',pC=pp>=0?'up':'dn';
@@ -897,7 +891,7 @@ function renderHoldings(){
   });
   $('holdTbl').innerHTML=h;
   $('saveBar').style.display='none';
-  $('editBtn').textContent='✏️ 编辑';
+  $('editBtn').style.display='';
 }
 
 
@@ -909,13 +903,9 @@ function savePos(){
   var sdEl=$('snapDate');var sd=(sdEl&&sdEl.value)?sdEl.value:todayStr();
   var snapPos={};
   POS.forEach(function(p){
-    if(p.kind==='otc'){
-      var v=parseFloat($('pos_'+p.key+'_v').value)||0,c=parseFloat($('pos_'+p.key+'_c').value)||0;
-      snapPos[p.key]={value:v,cost:c};
-    }else{
-      var s=parseFloat($('pos_'+p.key+'_s').value)||0,c2=parseFloat($('pos_'+p.key+'_c').value)||0;
-      snapPos[p.key]={shares:s,cost:c2};
-    }
+    if(p.kind==='otc'){snapPos[p.key]=JSON.parse(JSON.stringify(posOf(p.key)));return;}
+    var s=parseFloat($('pos_'+p.key+'_s').value)||0,c2=parseFloat($('pos_'+p.key+'_c').value)||0;
+    snapPos[p.key]={shares:s,cost:c2};
   });
   if(sd===todayStr()){S.positions=JSON.parse(JSON.stringify(snapPos));}
   var snapCost=0;POS.forEach(function(p){
@@ -1336,7 +1326,15 @@ function cloudPull(){
 }
 function exportJson(){var b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='paistar-'+todayStr()+'.json';a.click();}
 function importJson(){var inp=document.createElement('input');inp.type='file';inp.accept='.json';inp.onchange=function(){var f=inp.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){try{var p=JSON.parse(rd.result);if(p&&p.settings){S=p;saveLocal();renderAll();alert('导入成功');}else{alert('格式不对');}}catch(e){alert('解析失败');}};rd.readAsText(f);};inp.click();}
-function clearAll(){if(!confirm('确定清空本地所有数据？(云端不删)'))return;localStorage.removeItem(LS_KEY);location.reload();}
+function clearAll(){
+  if(!confirm('确定重置全部数据？将同时清空本地和云端并归零，不可恢复。'))return;
+  localStorage.removeItem(LS_KEY);
+  if(S.settings.syncKey){
+    fetch('https://textdb.online/update/?key='+S.settings.syncKey+'&value=',{method:'POST'})
+      .catch(function(){})
+      .then(function(){location.reload();});
+  }else{location.reload();}
+}
 function init(){
   var bm=$('bootMsg');if(bm)bm.style.display='none';
   loadLocal();
