@@ -1,11 +1,11 @@
 {
-  "name": "派大星全天候配置",
-  "short_name": "派大星全天候配置",
+  "name": "天才派大星",
+  "short_name": "天才派大星",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0b0f14",
   "theme_color": "#0b0f14",
-  "description": "派大星全天候配置 · V10全天候策略看板（资产/分析/调仓 · 且慢导入 · 收益日历）",
+  "description": "天才派大星全天候配置策略 · V10全天候看板（资产/分析/调仓 · 场外导入 · 收益日历）",
   "icons": [
     {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
     {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}

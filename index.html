@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b0f14">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>派大星全天候配置</title>
+<title>天才派大星全天候配置策略</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
@@ -18,6 +18,7 @@ body{background:radial-gradient(1200px 460px at 50% -120px,#172130 0%,var(--bg) 
 header{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,rgba(11,15,20,.96),rgba(11,15,20,.85));backdrop-filter:blur(10px);padding:9px 2px 7px;border-bottom:1px solid rgba(34,43,54,.6);display:flex;align-items:center;justify-content:space-between}
 header h1{font-size:16px;letter-spacing:.5px;display:flex;align-items:center;gap:6px;background:linear-gradient(90deg,#fff,#ffd78a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 header h1 .star{-webkit-text-fill-color:var(--gold)}
+header h1 .appic{width:18px;height:18px;border-radius:50%;vertical-align:-3px;margin-right:5px;object-fit:cover}
 .sub{font-size:9px;color:var(--sub);letter-spacing:1.5px}
 .badge{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--card2);border:1px solid var(--line);color:var(--sub);white-space:nowrap}
 .badge.ok{color:#7ee787;border-color:#1f6f2f}
@@ -176,7 +177,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
 <div id="verMsg" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#2f81f7;color:#fff;text-align:center;font-size:13px;padding:8px;font-weight:600"></div>
 <header>
   <div>
-    <h1><span class="star">★</span>派大星全天候配置</h1>
+    <h1><img class="appic" src="icon-192.png" alt="">天才派大星全天候配置策略</h1>
   </div>
   <div style="text-align:right">
     <span id="liveBadge" class="badge warn">行情加载中…</span>
@@ -390,7 +391,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
 <!-- 操作手册弹层 -->
 <div class="mask" id="manMask" style="display:none" onclick="if(event.target===this)closeManual()">
   <div class="modal" style="max-height:84vh;overflow-y:auto">
-    <h3>📖 操作手册 · 派大星全天候配置（V10）</h3>
+    <h3>📖 操作手册 · 天才派大星全天候配置策略（V10）</h3>
     <div class="muted" style="margin-bottom:8px">5 资产等权（各 20%）｜沪深300/中证500 做 250 日线择时｜纳指/黄金/国债永持｜场内+场外双渠道</div>
     <div class="man-sec"><b>一、每周操作（一周只看一次、只做一次）</b>
       <div>· 周五晚：查沪深300/中证500 收盘 vs 250日线，记下谁跌破/谁站上；数"站上几条"→ 定下周定投倍率（0条=2.0倍｜1条=1.5倍｜2条=1.0倍）</div>
@@ -423,7 +424,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
 </div>
 
-<script>var PAGE_VERSION='v5.2';
+<script>var PAGE_VERSION='v5.3';
 var LS_KEY='paistar_v42';
 var DEFAULT_SYNC_KEY='PT3kN0uaDxK2YXLmpcD6Mxu9';
 var POS=[
