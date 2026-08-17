@@ -354,7 +354,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
 </div>
 
-<script>var PAGE_VERSION='v4.39';
+<script>var PAGE_VERSION='v4.40';
 var LS_KEY='paistar_v42';
 var DEFAULT_SYNC_KEY='PT3kN0uaDxK2YXLmpcD6Mxu9';
 var POS=[
@@ -854,10 +854,11 @@ function renderHoldings(){
     var color=(l.key==='hs300')?'#4da3ff':(l.key==='zz500')?'#a78bfa':(l.key==='ndx')?'#ff9f43':(l.key==='gold')?'#f0b90b':'#2dd4bf';
     var chev=(l.key==='ndx')?'<span class="chv" onclick="toggleNdx()">'+(ndxOpen?'▾':'▸')+'</span>':'';
     var px=legPrice(l.key);
+    var cp=legCostPrice(l.key);
     var isNdx=l.key==='ndx';
     h+='<tr>'+
       '<td class="ast-nm"><span class="dot" style="background:'+color+'"></span>'+l.name+chev+'<span class="s">'+fmtMoney(lv)+'</span></td>'+
-      '<td class="l2"><span>'+(isNdx?'—':fmt(px,3))+'</span><span class="s">'+(isNdx?'—':fmtMoney(lc))+'</span></td>'+
+      '<td class="l2"><span>'+(isNdx?'—':fmt(px,3))+'</span><span class="s">'+(isNdx?'—':fmt(cp,3))+'</span></td>'+
       '<td class="l2"><span class="'+dCls+'">'+(dp>=0?'+':'')+fmtMoney(dp)+'</span><span class="s '+dCls+'">'+(dp>=0?'+':'')+fmtPct(dp/(lv-dp||1))+'</span></td>'+
       '<td class="l2"><span class="'+pCls+'">'+(pn>=0?'+':'')+fmtMoney(pn)+'</span><span class="s '+pCls+'">'+(pn>=0?'+':'')+fmtPct(lc>0?pn/lc:0)+'</span></td>'+
       '<td>'+fmtPct(tv>0?lv/tv:0)+'</td></tr>';
@@ -1145,6 +1146,7 @@ function monthReturn(y,m,dmap){
 
 /* ===== 计算器 ===== */
 function legPrice(leg){for(var i=0;i<POS.length;i++)if(POS[i].leg===leg&&POS[i].kind==='etf')return latestPrice(POS[i].key);return null;}
+function legCostPrice(leg){for(var i=0;i<POS.length;i++)if(POS[i].leg===leg&&POS[i].kind==='etf')return costOf(POS[i].key);return null;}
 function toggleVol(){volOn=!volOn;$('volTgl').className='tgl'+(volOn?' on':'');renderCalc();}
 function setBal(b){balMode=(balMode===b)?'none':b;var bt=$('balSeg').querySelectorAll('button');for(var i=0;i<bt.length;i++)bt[i].className=(bt[i].getAttribute('data-b')===balMode)?'on':'';renderCalc();}
 
