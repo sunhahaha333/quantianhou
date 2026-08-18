@@ -144,11 +144,6 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
 .cal .day.has{background:rgba(255,255,255,.05)}
 .cal .day.has .a{font-size:10px;font-weight:700}
 .cal .day.has .r{font-size:8px}
-.reb-grid{display:flex;gap:8px;align-items:stretch}
-.reb-grid .card{flex:1 1 0;min-width:0;max-width:50%;display:flex;flex-direction:column}
-.reb-grid .chips{flex:1}
-.reb-grid #dcaBox{flex:1}
-.reb-left,.reb-right{min-width:0}
 .ob{font-size:9px;padding:1px 6px;border-radius:7px;margin-left:4px;vertical-align:1px}
 .ob.ok{color:#7ee787;border:1px solid #1f6f2f}
 .ob.warn{color:#ffa657;border:1px solid #9e6a03}
@@ -277,15 +272,9 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
 
 <!-- ========== Tab3 调仓 ========== -->
 <section id="tab-reb" class="tabp">
-  <div class="reb-grid">
-    <div class="card">
-      <div class="sec-head" style="margin-bottom:6px"><h2>调仓建议</h2></div>
-      <div class="chips" id="chips" style="display:block"></div>
-    </div>
-    <div class="card">
-      <div class="sec-head" style="margin-bottom:6px"><h2>定投建议</h2></div>
-      <div id="dcaBox"></div>
-    </div>
+  <div class="card">
+    <div class="sec-head" style="margin-bottom:6px"><h2>调仓建议</h2></div>
+    <div class="chips" id="chips" style="display:block"></div>
   </div>
 
   <div class="card">
@@ -295,8 +284,8 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
       <div><b>波动率控仓</b></div>
     </div>
     <div class="seg" id="balSeg">
-      <button data-b="4" class="on">四方平衡</button>
-      <button data-b="5">五方平衡</button>
+      <button data-b="3" class="on">三角平衡</button>
+      <button data-b="4">四角平衡</button>
     </div>
     <div class="seg" id="prefSeg" style="margin-top:4px">
       <button data-p="etf" class="on">优先场内</button>
@@ -346,7 +335,7 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
 <div class="mask" id="impMask" style="display:none" onclick="if(event.target===this)closeImp()">
   <div class="modal">
     <h3 id="impTitle">📋 场外基金导入</h3>
-    <div id="impHint" class="muted">把基金平台的持仓整段复制粘贴即可（格式：基金名+市值+日收益+收益率+持有收益+收益率），自动识别归属腿：沪深300/中证500/黄金/国债，其余默认归纳指：</div>
+    <div id="impHint" class="muted">把基金平台的持仓整段复制粘贴即可（格式：基金名+市值+日收益+收益率+持有收益+收益率），自动识别归属腿：沪深300/黄金/国债，其余默认归纳指：</div>
     <pre id="impExample">易方达沪深300ETF联接C
 ￥1000.00
 +5.00
@@ -368,7 +357,6 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
         <select id="impDef">
           <option value="ndx" selected>纳指场外</option>
           <option value="hs300">沪深300</option>
-          <option value="zz500">中证500</option>
           <option value="gold">黄金</option>
           <option value="bond">国债</option>
           <option value="none">不导入(跳过)</option>
@@ -391,32 +379,29 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
 <!-- 操作手册弹层 -->
 <div class="mask" id="manMask" style="display:none" onclick="if(event.target===this)closeManual()">
   <div class="modal" style="max-height:84vh;overflow-y:auto">
-    <h3>📖 操作手册 · 天才派大星全天候配置策略（V10）</h3>
-    <div class="muted" style="margin-bottom:8px">5 资产等权（各 20%）｜沪深300/中证500 做 250 日线择时｜纳指/黄金/国债永持｜场内+场外双渠道</div>
+    <h3>📖 操作手册 · 派大星4腿（A 定稿）</h3>
+    <div class="muted" style="margin-bottom:8px">沪深300/纳指/黄金/国债 各25% ｜ 沪深300 250日线择时 ｜ 波动率12/10 ｜ 周频 ｜ 聚宽：年化11.44%/回撤-11.53%/夏普0.847</div>
     <div class="man-sec"><b>一、每周操作（一周只看一次、只做一次）</b>
-      <div>· 周五晚：查沪深300/中证500 收盘 vs 250日线，记下谁跌破/谁站上；数"站上几条"→ 定下周定投倍率（0条=2.0倍｜1条=1.5倍｜2条=1.0倍）</div>
-      <div>· 周一上午：① 趋势执行（卖跌破的、买回站上的，钱分给剩余持有腿，不进货基）；② 波动率（近60日年化 &gt;12% 等比例降仓、≤10% 回补）；③ 4腿再平衡（纳指普通周一不动）；④ 每月第一个周一：纳指一起再平衡</div>
+      <div>· 周五晚：查沪深300 vs 250日线（线上/线下）；定下周定投倍率（线上=1倍/线下=2倍）</div>
+      <div>· 周一上午：① 趋势执行（跌破年线 → 卖沪深300，钱分给其余3腿；站回年线买回）；② 波动率（近60日年化 &gt;12% 等比例降仓、≤10% 回补）；③ 4腿再平衡（纳指普通周一不动）；④ 每月第一个周一：纳指一起再平衡</div>
     </div>
     <div class="man-sec"><b>二、每月第一个周一：纳指再平衡</b>
-      <div>· 超配（&gt;20%）→ 赎回超配部分：优先场外赎回</div>
-      <div>· 低配（&lt;20%）→ 补仓顺序：① 场外申购（零溢价）→ ② 场内513100（溢价≤1%）→ ③ 513500替代 → ④ 都卡住记"待补"，等溢价回落再补；绝不为追回20%付高溢价</div>
+      <div>· 超配（&gt;25%）→ 赎回超配部分：优先场外赎回</div>
+      <div>· 低配（&lt;25%）→ 补仓顺序：① 场外申购（零溢价）→ ② 场内513100（溢价≤1%）→ ③ 513500替代 → ④ 记"待补"；绝不为追回25%付高溢价</div>
     </div>
     <div class="man-sec"><b>三、三条铁律</b>
-      <div>1) 卖出不产生现金：跌破年线的腿卖掉的钱分给剩余持有资产；只有波动率降仓才产生现金</div>
+      <div>1) 卖出不产生现金：沪深300卖出的钱分给剩余3腿；只有波动率降仓才产生现金</div>
       <div>2) 纳指只进不出：只做每周定投；唯一卖出 = 月度再平衡的超配赎回</div>
-      <div>3) 纳指溢价保护：场内溢价 &gt;2% 当周不买、≤1% 恢复；限购/停牌用 513500 替代</div>
+      <div>3) 纳指溢价保护：场内溢价 &gt;2% 当周不买、≤1% 恢复；限购/停牌用 513500</div>
     </div>
-    <div class="man-sec"><b>四、场内 / 场外怎么用本App</b>
-      <div>· 场内：编辑里只填 5 只 ETF 的份额+成本价（带代码）；交易按 100 份/手</div>
-      <div>· 场外：用「📋 导入」粘贴基金平台持仓，自动识别归属腿（识别不到的可选归入哪条腿或跳过）</div>
-      <div>· 再平衡计算器选「优先场内」=场内先交易、不够的场外补；「优先场外」反之；计算器按 10 行（5腿×场内/场外）给金额</div>
-      <div>· 每周一在 App 里核对「调仓建议」的线上/线下与偏移率</div>
+    <div class="man-sec"><b>四、定投</b>
+      <div>基准金额 × 倍率（沪深300线上=1倍/线下=2倍）；纳指场外固定金额每周买（只进不出）；沪深300线下时其余给黄金/国债各50%，不进货币基金</div>
     </div>
     <div class="man-sec"><b>五、失效观察（人工复核）</b>
       <div>连续 12 个月负收益 或 从高点回撤 &gt;20% → 暂停策略、人工复核（非自动清仓）</div>
     </div>
     <div class="man-sec"><b>六、纪律与预期（诚实）</b>
-      <div>每月记录持仓 vs 目标偏差，单月 &gt;5% 视为执行失败；不主观加减仓；长期保守预期年化 7~10%，极端预案 -25%；别把历史收益当保底</div>
+      <div>每月记录持仓 vs 目标偏差，单月 &gt;5% 视为执行失败；不主观加减仓；聚宽口径年化~11.4%、回撤~-11.5%；长期保守 7~10%，极端预案 -20%；纳指25%是最大单一敞口，接受它，别加过滤</div>
     </div>
     <div class="rowline" style="margin-top:10px">
       <button class="pri" style="flex:1" onclick="closeManual()">知道了</button>
@@ -424,14 +409,13 @@ textarea{width:100%;min-height:110px;background:var(--card2);border:1px solid va
   </div>
 </div>
 
-<script>var PAGE_VERSION='v5.3';
+
+<script>var PAGE_VERSION='v6.1';
 var LS_KEY='paistar_v42';
 var DEFAULT_SYNC_KEY='PT3kN0uaDxK2YXLmpcD6Mxu9';
 var POS=[
  {key:'hs300_etf',name:'沪深300·场内',sym:'sh510300',leg:'hs300',kind:'etf',timed:1,color:'#4da3ff'},
  {key:'hs300_otc',name:'沪深300·场外',leg:'hs300',kind:'otc',color:'#7fb8ff'},
- {key:'zz500_etf',name:'中证500·场内',sym:'sh510500',leg:'zz500',kind:'etf',timed:1,color:'#a78bfa'},
- {key:'zz500_otc',name:'中证500·场外',leg:'zz500',kind:'otc',color:'#c4b0ff'},
  {key:'ndx_etf',name:'纳指·场内',sym:'sh513100',leg:'ndx',kind:'etf',color:'#ff9f43'},
  {key:'ndx_otc',name:'纳指·场外',leg:'ndx',kind:'otc',color:'#ffc793'},
  {key:'gold_etf',name:'黄金·场内',sym:'sh518880',leg:'gold',kind:'etf',color:'#f0b90b'},
@@ -439,13 +423,13 @@ var POS=[
  {key:'bond_etf',name:'国债·场内',sym:'sh511010',leg:'bond',kind:'etf',color:'#2dd4bf'},
  {key:'bond_otc',name:'国债·场外',leg:'bond',kind:'otc',color:'#8fe9da'}
 ];
-var LEGS=[{key:'hs300',name:'沪深300'},{key:'zz500',name:'中证500'},{key:'ndx',name:'纳指'},{key:'gold',name:'黄金'},{key:'bond',name:'国债'}];
-var LEGSYM={hs300:'sh510300',zz500:'sh510500',ndx:'sh513100',gold:'sh518880',bond:'sh511010'};
-var TIMED=['hs300','zz500'];
-var S3M={0:2.0,1:1.5,2:1.0};
-var RT_SYMS=['sh510300','sh510500','sh513100','sh518880','sh511010','sh000300'];
+var LEGS=[{key:'hs300',name:'沪深300'},{key:'ndx',name:'纳指'},{key:'gold',name:'黄金'},{key:'bond',name:'国债'}];
+var LEGSYM={hs300:'sh510300',ndx:'sh513100',gold:'sh518880',bond:'sh511010'};
+var TIMED=['hs300'];
+var S3M={0:2.0,1:1.0};
+var RT_SYMS=['sh510300','sh513100','sh518880','sh511010','sh000300'];
 var cache={kline:{},realtime:{},realtimeAt:null,otcNav:null,otcNavAt:null};
-var rng='month',ctype='ret',custS='',custE='',balMode='4',volOn=false,pref='etf',editing=false,legOpen={hs300:false,zz500:false,ndx:false,gold:false,bond:false},otcOpen={hs300:false,zz500:false,ndx:false,gold:false,bond:false},chart=null,pie=null,spark=null;
+var rng='month',ctype='ret',custS='',custE='',balMode='3',volOn=false,pref='etf',editing=false,legOpen={hs300:false,ndx:false,gold:false,bond:false},otcOpen={hs300:false,ndx:false,gold:false,bond:false},chart=null,pie=null,spark=null;
 var calMode='day',calY=new Date().getFullYear(),calM=new Date().getMonth();
 var pendingImport=null;
 
@@ -453,12 +437,11 @@ function defaults(){
   return {schema:1,settings:{maN:250,volCap:12,volRestore:10,fundCode:'040046',startDate:'',refreshSec:15,dcaBase:500,syncKey:DEFAULT_SYNC_KEY},
     positions:{
       hs300_etf:{shares:0,cost:0},hs300_otc:{value:0,cost:0},
-      zz500_etf:{shares:0,cost:0},zz500_otc:{value:0,cost:0},
       ndx_etf:{shares:0,cost:0},ndx_otc:{value:0,cost:0},
       gold_etf:{shares:0,cost:0},gold_otc:{value:0,cost:0},
       bond_etf:{shares:0,cost:0},bond_otc:{value:0,cost:0}},
     snapshots:[],
-    otc:{hs300:{funds:[],dayPnl:0,updatedAt:''},zz500:{funds:[],dayPnl:0,updatedAt:''},ndx:{funds:[],dayPnl:0,updatedAt:''},gold:{funds:[],dayPnl:0,updatedAt:''},bond:{funds:[],dayPnl:0,updatedAt:''}},
+    otc:{hs300:{funds:[],dayPnl:0,updatedAt:''},ndx:{funds:[],dayPnl:0,updatedAt:''},gold:{funds:[],dayPnl:0,updatedAt:''},bond:{funds:[],dayPnl:0,updatedAt:''}},
     demo:0,updatedAt:0};
 }
 var S=defaults();
@@ -495,7 +478,7 @@ function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e
 function normalizeData(raw){
   var d=defaults();
   var out={schema:raw.schema||1,settings:Object.assign({},d.settings,raw.settings||{}),positions:{},snapshots:[],otc:JSON.parse(JSON.stringify(d.otc)),demo:raw.demo||0,updatedAt:raw.updatedAt||0};
-  var OLD2NEW={hs300:'hs300_etf',zz500:'zz500_etf',gold:'gold_etf',bond:'bond_etf',ndx_etf:'ndx_etf',ndx_otc:'ndx_otc'};
+  var OLD2NEW={hs300:'hs300_etf',gold:'gold_etf',bond:'bond_etf',ndx_etf:'ndx_etf',ndx_otc:'ndx_otc'};
   var NEW2OLD={};Object.keys(OLD2NEW).forEach(function(k){NEW2OLD[OLD2NEW[k]]=k;});
   var rp=raw.positions||{};
   POS.forEach(function(p){
@@ -512,6 +495,16 @@ function normalizeData(raw){
     nd.updatedAt=oldOtc.updatedAt||'';
     out.otc.ndx=nd;
   }
+  ['hs300','ndx','gold','bond'].forEach(function(L){
+    var o=oldOtc[L];
+    if(o&&typeof o==='object'){
+      var cur=out.otc[L]||{funds:[],dayPnl:0,updatedAt:''};
+      cur.funds=Array.isArray(o.funds)?o.funds.slice():[];
+      cur.dayPnl=typeof o.dayPnl==='number'?o.dayPnl:0;
+      cur.updatedAt=o.updatedAt||'';
+      out.otc[L]=cur;
+    }
+  });
   out.snapshots=(Array.isArray(raw.snapshots)?raw.snapshots:[]).map(function(sn){
     var pp={};POS.forEach(function(p){
       var oldKey=NEW2OLD[p.key]||p.key;
@@ -750,10 +743,10 @@ function maLines(){
   TIMED.forEach(function(k){
     var a=null;for(var i=0;i<POS.length;i++)if(POS[i].leg===k&&POS[i].kind==='etf')a=POS[i];
     var kk=cache.kline[a.sym]||[];
-    if(kk.length<251){out.push({key:k,name:a.name,ok:null});return;}
+    if(kk.length<251){out.push({key:k,name:a.name.replace('·场内',''),ok:null});return;}
     var n=kk.length,ma=0;for(var i=n-250;i<n;i++)ma+=kk[i].close;ma/=250;
     var close=kk[n-1].close,ok=close>=ma;
-    out.push({key:k,name:a.name,ok:ok,close:close,ma:ma,dist:close/ma-1});
+    out.push({key:k,name:a.name.replace('·场内',''),ok:ok,close:close,ma:ma,dist:close/ma-1});
   });
   return out;
 }
@@ -771,8 +764,8 @@ function simStrategy(){
     ma[l.key]=[];var s=0;
     for(var i=0;i<dates.length;i++){s+=closes[l.key][i];if(i>=250)s-=closes[l.key][i-250];ma[l.key].push(i>=249?s/250:NaN);}
   });
-  var hold={hs300:1,zz500:1,ndx:1,gold:1,bond:1},scale=1,nav=1;
-  var w={};LEGS.forEach(function(l){w[l.key]=0.2;});
+  var hold={hs300:1,ndx:1,gold:1,bond:1},scale=1,nav=1;
+  var w={};LEGS.forEach(function(l){w[l.key]=0.25;});
   var rets=[],out=[];
   var cap=S.settings.volCap/100,restore=S.settings.volRestore/100;
   for(var i=0;i<dates.length;i++){
@@ -784,6 +777,7 @@ function simStrategy(){
         var c=closes[k][i-1],m=ma[k][i-1];
         if(!isNaN(m)){if(hold[k]){if(c<m)hold[k]=0;}else{if(c>=m)hold[k]=1;}}
       });
+
       if(rets.length>=60){var v=std(rets.slice(-60))*Math.sqrt(252);if(scale>=0.999&&v>cap)scale=Math.min(cap/v,1);else if(scale<0.999&&v<=restore)scale=1;}
       var held=LEGS.filter(function(l){return hold[l.key];});
       var includeNdx=firstMonOfMonth(d);
@@ -1080,13 +1074,6 @@ function renderIndicators(){
   }
   h+='</div>';
   $('chips').innerHTML=h;
-  var mult=S3M[okN]||1.0;
-  var g='<div class="dca-v">';
-  [0,1,2].forEach(function(k){
-    g+='<div class="dca-vr'+(okN===k?' cur':'')+'"><span>线上 '+k+' 条</span><b>'+(S3M[k]).toFixed(1)+'倍</b></div>';
-  });
-  g+='</div>';
-  $('dcaBox').innerHTML=g;
 }
 
 
@@ -1105,7 +1092,7 @@ function priceOn(k,d){
   for(var i=0;i<keys.length;i++){if(keys[i]>d)break;last=mp[keys[i]];}
   return last;
 }
-function legDot(lk){var c=(lk==='hs300')?'#4da3ff':(lk==='zz500')?'#a78bfa':(lk==='ndx')?'#ff9f43':(lk==='gold')?'#f0b90b':'#2dd4bf';return '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+c+';margin-right:5px;vertical-align:1px"></span>';}
+function legDot(lk){var c=(lk==='hs300')?'#4da3ff':(lk==='ndx')?'#ff9f43':(lk==='gold')?'#f0b90b':'#2dd4bf';return '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+c+';margin-right:5px;vertical-align:1px"></span>';}
 
 function legsOn(d){
   var pos=null;
@@ -1284,23 +1271,24 @@ function renderCalc(){
     else if(vol!=null&&vol<=restore){note='波动率已回落到回补阈值内，维持满仓；';}
     else{note='波动率未超上限，维持满仓；';}
   }
-  var held={hs300:true,zz500:true,ndx:true,gold:true,bond:true},sold=[];
-  maLines().forEach(function(l){if(l.key==='hs300'||l.key==='zz500'){if(l.ok===false){held[l.key]=false;sold.push(l.name);}}});
+  var held={hs300:true,ndx:true,gold:true,bond:true},sold=[];
+  maLines().forEach(function(l){if(l.key==='hs300'){if(l.ok===false){held['hs300']=false;sold.push(l.name);}}});
+
   var tgt={};
-  if(balMode==='4'){
+  if(balMode==='3'){
     var h4=LEGS.filter(function(l){return l.key!=='ndx'&&held[l.key];});
     if(h4.length){var t4=(tv*scale-cur['ndx'])/h4.length;h4.forEach(function(l){tgt[l.key]=t4;});}
     tgt['ndx']=cur['ndx'];
     LEGS.forEach(function(l){if(l.key!=='ndx'&&!held[l.key])tgt[l.key]=0;});
-    note+='四方平衡：'+(sold.length?('('+sold.join('/')+' 线下→建议卖出) '):'')+'其余 '+h4.length+' 腿等权，纳指不动。';
-  }else if(balMode==='5'){
+    note+='三角平衡（不含纳指）：'+(sold.length?('('+sold.join('/')+' 线下→建议卖出) '):'')+'其余 '+h4.length+' 腿等权，纳指保持漂移。';
+  }else if(balMode==='4'){
     var hAll=LEGS.filter(function(l){return held[l.key];});
-    if(hAll.length){var t5=tv*scale/hAll.length;hAll.forEach(function(l){tgt[l.key]=t5;});}
+    if(hAll.length){var tAll=tv*scale/hAll.length;hAll.forEach(function(l){tgt[l.key]=tAll;});}
     LEGS.forEach(function(l){if(!held[l.key])tgt[l.key]=0;});
-    note+='五方平衡：'+(sold.length?('('+sold.join('/')+' 线下→建议卖出) '):'')+'其余 '+hAll.length+' 腿等权。';
+    note+='四角平衡（含纳指）：'+(sold.length?('('+sold.join('/')+' 线下→建议卖出) '):'')+'全部 '+hAll.length+' 腿等权（纳指一起调）。';
   }else{
     LEGS.forEach(function(l){tgt[l.key]=held[l.key]?cur[l.key]*scale:0;});
-    note+=volOn?('等比例降仓到 '+fmt(scale*100,1)+'%。'):'当前不调仓（可选择四方/五方平衡）。';
+    note+=volOn?('等比例降仓到 '+fmt(scale*100,1)+'%。'):'当前不调仓（选择「三角/四角平衡」）。';
   }
   var h='<div class="muted" style="margin-bottom:6px">'+note+'</div><div class="wrap"><table class="tbl"><tr><th>资产</th><th>当前<br>市值/仓位</th><th>目标<br>市值/仓位</th><th>差额</th><th>操作</th></tr>';
   var buy=0,sell=0;
@@ -1351,8 +1339,7 @@ function openImp(){pendingImport=null;$('impMask').style.display='flex';$('impTe
 function closeImp(){$('impMask').style.display='none';}
 function parseImport(text){
   var KEYS=[
-    {k:'hs300',ws:['沪深300','510300']},{k:'zz500',ws:['中证500','510500']},
-    {k:'ndx_otc',ws:['纳指场外','纳指·场外','场外纳指','040046','且慢']},
+    {k:'hs300',ws:['沪深300','510300']},{k:'ndx_otc',ws:['纳指场外','纳指·场外','场外纳指','040046','且慢']},
     {k:'gold',ws:['黄金','518880']},{k:'bond',ws:['国债','511010']}
   ];
   var pos={},msg=[];
@@ -1379,7 +1366,6 @@ function parseImport(text){
 function classifyFund(name){
   var RULES=[
     {leg:'hs300',ws:['沪深300','510300','300ETF']},
-    {leg:'zz500',ws:['中证500','510500','500ETF']},
     {leg:'gold',ws:['黄金','518880','金ETF','上海金']},
     {leg:'bond',ws:['国债','511010','利率债','政金债','国开债']},
     {leg:'ndx',ws:['纳指','纳斯达克','040046','100ETF']}
@@ -1402,9 +1388,9 @@ function parsePreview(){
     (byLeg[L]=byLeg[L]||[]).push(f);
   });
   q.byLeg=byLeg; q.skipped=skipped;
-  var legName={hs300:'沪深300',zz500:'中证500',ndx:'纳指',gold:'黄金',bond:'国债'};
+  var legName={hs300:'沪深300',ndx:'纳指',gold:'黄金',bond:'国债'};
   var h='解析到 <b>'+q.funds.length+'</b> 只基金，自动归属：<br>';
-  ['ndx','hs300','zz500','gold','bond'].forEach(function(L){
+  ['ndx','hs300','gold','bond'].forEach(function(L){
     var arr=byLeg[L];if(!arr)return;
     var v=0;arr.forEach(function(f){v+=f.value;});
     h+='<div style="margin-top:5px"><b>'+legName[L]+'·场外</b> <span class="muted">'+arr.length+' 只 · '+fmtMoney(v)+' 元</span></div>';
@@ -1421,10 +1407,10 @@ function confirmImport(){
   var q=pendingImport;
   var idEl=$('impDate');var impDate=(idEl&&idEl.value)?idEl.value:todayStr();
   var byLeg=q.byLeg||{};
-  var legName={hs300:'沪深300',zz500:'中证500',ndx:'纳指',gold:'黄金',bond:'国债'};
+  var legName={hs300:'沪深300',ndx:'纳指',gold:'黄金',bond:'国债'};
   if(!S.otc)S.otc={};
   var importedLegs=[];
-  ['ndx','hs300','zz500','gold','bond'].forEach(function(L){
+  ['ndx','hs300','gold','bond'].forEach(function(L){
     var arr=byLeg[L];if(!arr||!arr.length)return;
     var v=0,c=0,dp=0;
     arr.forEach(function(f){v+=f.value;c+=(f.value-f.pnl);dp+=f.dayRet;});
@@ -1435,7 +1421,7 @@ function confirmImport(){
     importedLegs.push(legName[L]);
   });
   var snapPos=JSON.parse(JSON.stringify(S.positions));
-  ['ndx','hs300','zz500','gold','bond'].forEach(function(L){
+  ['ndx','hs300','gold','bond'].forEach(function(L){
     var arr=byLeg[L];if(!arr||!arr.length)return;
     var v=0,c=0;arr.forEach(function(f){v+=f.value;c+=(f.value-f.pnl);});
     snapPos[L+'_otc']={value:Math.round(v*100)/100,cost:Math.round(c*100)/100};
