@@ -70,10 +70,14 @@ header{
   position:sticky;top:0;z-index:30;
   background:linear-gradient(180deg,rgba(238,249,251,.97),rgba(238,249,251,.82));
   backdrop-filter:blur(12px);
-  padding:10px 2px 9px;
+  padding:10px 2px 8px;
   border-bottom:1px solid var(--line);
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  display:flex;flex-direction:column;gap:7px;
 }
+header .hd-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.acctbar{display:flex;align-items:center;gap:8px;min-width:0}
+.acctbar .muted{flex:none}
+#acctSeg{flex:1;margin:0}
 header h1{
   font-size:15px;font-weight:800;letter-spacing:.4px;
   display:flex;align-items:center;gap:7px;min-width:0;
@@ -384,7 +388,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 .pod .nm{flex:1;font-size:11.5px;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pod .nm small{display:block;font-weight:400;font-size:8px;color:var(--faint);font-variant-numeric:tabular-nums;margin-top:1px;overflow:hidden;text-overflow:ellipsis}
 .pod .v{font-size:11.5px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
-.pod .p{font-size:9.5px;font-weight:700;width:38px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pod .p{font-size:9.5px;font-weight:700;width:44px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .wb-right{display:flex;flex-direction:column;gap:8px;min-width:0}
 .wb-right #pieChart{width:100%;height:112px;flex:none}
 .wb-right #pieLegend{display:flex;flex-direction:column;justify-content:center;gap:4px}
@@ -403,7 +407,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
   .pod{gap:5px;padding:6px 8px}
   .pod .nm{font-size:11px}
   .pod .v{font-size:11px}
-  .pod .p{width:34px;font-size:9px}
+  .pod .p{width:38px;font-size:9px}
 }
 
 </style>
@@ -411,12 +415,21 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 <body><div id="bootMsg" style="background:#fff3d6;color:#8a6a3b;font-size:12px;padding:8px 12px;border-radius:10px;margin:8px 0">⏳ 正在加载…<br>若长时间空白：请在手机<b>系统浏览器（Safari/Chrome）</b>打开本文件，勿用微信内置浏览器（会拦截脚本）；或部署到 GitHub Pages 用网址打开。</div>
 <div id="verMsg" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#2f81f7;color:#fff;text-align:center;font-size:13px;padding:8px;font-weight:600"></div>
 <header>
-  <div>
-    <h1><img class="appic" src="icon-192.png" alt="">天才派大星全天候配置策略</h1>
+  <div class="hd-row">
+    <div style="min-width:0;flex:1;overflow:hidden">
+      <h1><img class="appic" src="icon-192.png" alt="">天才派大星全天候配置策略</h1>
+    </div>
+    <div style="text-align:right;flex:none;white-space:nowrap">
+      <span id="liveBadge" class="badge warn">行情加载中…</span>
+      <div id="verTag" style="font-size:10px;color:var(--sub);margin-top:2px"></div>
+    </div>
   </div>
-  <div style="text-align:right">
-    <span id="liveBadge" class="badge warn">行情加载中…</span>
-    <div id="verTag" style="font-size:10px;color:var(--sub);margin-top:2px"></div>
+  <div class="acctbar">
+    <span class="muted">账户</span>
+    <div class="seg small" id="acctSeg">
+      <button data-a="paistar" class="on" onclick="switchAcct('paistar')">天才派大星</button>
+      <button data-a="xiaomai" onclick="switchAcct('xiaomai')">小麦啵啵</button>
+    </div>
   </div>
 </header>
 
@@ -459,8 +472,13 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
         <button class="mini" id="editBtn" onclick="toggleEdit()">✏️ 编辑</button>
       </div>
     </div>
+    <div class="muted" style="margin:2px 2px 4px">📊 场内 · 股票/ETF</div>
     <div class="wrap">
-      <table class="tbl" id="holdTbl"></table>
+      <table class="tbl" id="etfTbl"></table>
+    </div>
+    <div class="muted" style="margin:10px 2px 4px">📦 场外 · 基金</div>
+    <div class="wrap" id="otcWrap">
+      <table class="tbl" id="otcTbl"></table>
     </div>
     <div class="rowline" id="saveBar" style="display:none;margin-top:9px">
       <label class="muted" style="flex:0 0 90px">快照日期<br><input id="snapDate" type="date" onchange="fillEditForm(this.value)"></label>
@@ -532,7 +550,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
       <label class="muted">债%<br><input id="tg_bond" type="number" min="0" max="100" step="1" style="width:54px"></label>
       <button class="mini" onclick="saveTargets()">保存配比</button>
     </div>
-    <div class="muted" id="tgMsg" style="margin:-4px 0 8px">目标配比可改（默认 红利20/纳指30/黄金25/债25）；资产总览会同步显示各腿偏离，≥3pp 红色提示</div>
+    <div class="muted" id="tgMsg" style="margin:-4px 0 8px">目标配比可改（默认 红利20/纳指30/黄金25/债25），保存后自动上传云端</div>
     <div class="seg" id="balSeg">
       <button data-b="3" class="on">三角平衡</button>
       <button data-b="4">四角平衡</button>
@@ -559,7 +577,6 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
         <button onclick="importJson()">导入JSON</button>
       </div>
       <div class="rowline">
-        <button style="color:var(--up)" onclick="clearAll()">🗑 重置全部（本地+云端归零）</button>
       </div>
       <div id="syncMsg" class="muted"></div>
     </div>
@@ -574,9 +591,9 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 
 <!-- ========== 底部导航 ========== -->
 <nav class="tabbar">
-  <button data-t="hold" class="on"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 12 L12 3 A9 9 0 0 1 21 12 Z" fill="currentColor" stroke="none"/></svg></span>资产</button>
-  <button data-t="anl"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 L9 11 L13 15 L21 6"/><path d="M15 6 h6 v6"/></svg></span>分析</button>
-  <button data-t="reb"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12 a9 9 0 1 1 -2.5 -6.2"/><path d="M21 3 v6 h-6"/></svg></span>调仓</button>
+  <button data-t="hold" class="on"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 12 L12 3.5 A8.5 8.5 0 0 1 20.5 12 Z" fill="currentColor" stroke="none"/></svg></span>资产</button>
+  <button data-t="anl"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 9 11 13 15 21 6"/><circle cx="9" cy="11" r="1.7" fill="currentColor" stroke="none"/><circle cx="13" cy="15" r="1.7" fill="currentColor" stroke="none"/><circle cx="21" cy="6" r="1.7" fill="currentColor" stroke="none"/></svg></span>分析</button>
+  <button data-t="reb"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8 h11"/><path d="M12 5 l3 3 -3 3"/><path d="M20 16 H9"/><path d="M12 13 l-3 3 3 3"/></svg></span>调仓</button>
 </nav>
 
 <!-- 导入弹层 -->
@@ -655,8 +672,31 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 </div>
 
 
-<script>var PAGE_VERSION='v1.1.0';
+<script>var PAGE_VERSION='v1.2.1';
 var LS_KEY='paistar_v42';
+var DEFAULT_ACCOUNT='paistar';
+var ACCOUNTS=[
+  {key:'paistar',name:'天才派大星',syncKey:DEFAULT_SYNC_KEY},
+  {key:'xiaomai',name:'小麦啵啵',syncKey:'XM-PaistarBobo-9f3Kq7wZ2mQ'}
+];
+function activeAcct(){return localStorage.getItem('paistar_active')||DEFAULT_ACCOUNT;}
+function acctInfo(k){for(var i=0;i<ACCOUNTS.length;i++)if(ACCOUNTS[i].key===k)return ACCOUNTS[i];return ACCOUNTS[0];}
+function acctSyncKey(k){return localStorage.getItem('paistar_skey_'+k)||acctInfo(k).syncKey;}
+function dataKeyFor(k){return k===DEFAULT_ACCOUNT?'paistar_v42':'paistar_v42_'+k;}
+function switchAcct(k){
+  if(k===activeAcct())return;
+  saveLocal();
+  localStorage.setItem('paistar_active',k);
+  S=defaults();
+  loadLocal();
+  var sk=$('syncKey');if(sk)sk.value=S.settings.syncKey;
+  renderAll();
+  refreshMarket();
+  cloudPull();
+  var seg=document.querySelectorAll('#acctSeg button');
+  for(var i=0;i<seg.length;i++)seg[i].className=(seg[i].getAttribute('data-a')===k)?'on':'';
+  refreshOtcNavs().then(function(){S.updatedAt=Date.now();saveLocal();renderAll();}).catch(function(){});
+}
 var DEFAULT_SYNC_KEY='PT3kN0uaDxK2YXLmpcD6Mxu9';
 var POS=[
  {key:'div_etf',name:'红利低波·场内',sym:'sh512890',leg:'div',kind:'etf',color:'#4da3ff'},
@@ -674,7 +714,7 @@ var TIMED=[];
 var S3M={0:2.0,1:1.0};
 var RT_SYMS=['sh512890','sh513100','sh518880','sh511010','sh000300'];
 var cache={kline:{},realtime:{},realtimeAt:null,otcNav:null,otcNavAt:null};
-var rng='month',ctype='ret',custS='',custE='',balMode='3',pref='etf',editing=false,legOpen={div:false,ndx:false,gold:false,bond:false},otcOpen={div:false,ndx:false,gold:false,bond:false},chart=null,pie=null,spark=null;
+var rng='month',ctype='ret',custS='',custE='',balMode='3',pref='etf',editing=false,legOpen={div:false,ndx:false,gold:false,bond:false},otcOpen={},chart=null,pie=null,spark=null;
 var calMode='day',calY=new Date().getFullYear(),calM=new Date().getMonth();
 var pendingImport=null;
 
@@ -719,7 +759,7 @@ function firstOfMonth(s){var d=new Date(s+'T00:00:00');return d.getFullYear()+'-
 function yearStart(s){var d=new Date(s+'T00:00:00');return d.getFullYear()+'-01-01';}
 function pad2(n){return ('0'+n).slice(-2);}
 
-function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){}scheduleSync();}
+function saveLocal(){try{localStorage.setItem(dataKeyFor(activeAcct()),JSON.stringify(S));}catch(e){}scheduleSync();}
 function normalizeData(raw){
   var d=defaults();
   var out={schema:raw.schema||1,settings:Object.assign({},d.settings,raw.settings||{}),positions:{},snapshots:[],otc:JSON.parse(JSON.stringify(d.otc)),demo:raw.demo||0,updatedAt:raw.updatedAt||0};
@@ -772,12 +812,13 @@ function normalizeData(raw){
 
 function loadLocal(){
   try{
-    var t=localStorage.getItem(LS_KEY);
+    var t=localStorage.getItem(dataKeyFor(activeAcct()));
     if(t){var p=JSON.parse(t);if(p&&p.settings){S=normalizeData(p);}}
   }catch(e){}
+  S.settings.syncKey=acctSyncKey(activeAcct());
 }
 
-function localClear(){localStorage.removeItem(LS_KEY);location.reload();}
+function localClear(){localStorage.removeItem(dataKeyFor(activeAcct()));location.reload();}
 
 function klineMap(sym){var m={};var a=cache.kline[sym];if(a)for(var i=0;i<a.length;i++)m[a[i].date]=a[i].close;return m;}
 function fetchKline(sym,count){
@@ -914,13 +955,13 @@ function parseFundTable(text){
     var value=parseFloat(String(f[11]||'').replace(/,/g,''));
     if(isNaN(shares)||shares<=0)return;
     if(!value||isNaN(value)||value<=0)value=nav>0?shares*nav:0;
-    if(!map[code])map[code]={code:code,name:name,shares:0,value:0,nav:nav||0};
+    if(!map[code])map[code]={code:code,name:name,shares:0,value:0,nav:nav||0,navDate:String(f[10]||'').trim()};
     var e=map[code];e.shares+=shares;e.value+=value;if(nav>0)e.nav=nav;
   });
   var funds=[],value=0;
   Object.keys(map).forEach(function(k){
     var e=map[k];
-    funds.push({code:e.code,name:e.name,shares:Math.round(e.shares*10000)/10000,nav:e.nav,value:Math.round(e.value*100)/100,dayPct:0,pnlPct:0});
+    funds.push({code:e.code,name:e.name,shares:Math.round(e.shares*10000)/10000,nav:e.nav,navDate:e.navDate||'',value:Math.round(e.value*100)/100,dayPct:0,pnlPct:null});
     value+=e.value;
   });
   return {funds:funds,value:value,pnl:0,dayPnl:0,cost:value,source:'table'};
@@ -960,10 +1001,26 @@ function buildNavSeries(){
   var seedPos=snaps.length?snaps[0].pos:S.positions;
   var seedCost=snaps.length?(snaps[0].costTotal||0):totalCost();
   var pos=seedPos,cost=seedCost,units=seedCost>0?seedCost:0,si=0,out=[];
+  function otcValOn(leg,d){
+    var arr=(S.otc&&S.otc[leg]&&S.otc[leg].funds)||[];
+    var tot=0,any=false;
+    arr.forEach(function(f){
+      if(f.code&&f.shares&&cache.fundNav&&cache.fundNav[f.code]){
+        var a=cache.fundNav[f.code],last=null;
+        for(var k=0;k<a.length;k++){if(a[k].date<=d)last=a[k].nav;else break;}
+        if(last!=null){tot+=f.shares*last;any=true;}
+      }
+    });
+    return any?tot:null;
+  }
   function valueWith(pp,i){
-    var v=0;
+    var v=0,d=dates[i];
     POS.forEach(function(a){
-      if(a.kind==='otc'){v+=(pp[a.key]||{}).value||0;return;}
+      if(a.kind==='otc'){
+        var nv=otcValOn(a.leg,d);
+        v+=(nv!=null)?nv:((pp[a.key]||{}).value||0);
+        return;
+      }
       var sh=(pp[a.key]||{}).shares||0,p=prices[a.key]?prices[a.key][i]:null;if(sh&&p)v+=sh*p;
     });
     return v;
@@ -1000,14 +1057,11 @@ function dailyReturns(){
     out.push({date:ser[i].date,ret:ser[i-1].value>0?amt/ser[i-1].value:0,amt:amt});
   }
   var today=todayStr();
-  var dw=(new Date(today+'T00:00:00')).getDay();
-  if(dw>=1&&dw<=5){
-    var dp=todayPnl(),tv=totalValue(),prevVal=tv-dp;
-    if(prevVal>0){
-      var p={date:today,ret:dp/prevVal,amt:dp};
-      var ex=-1;for(var k=0;k<out.length;k++)if(out[k].date===today)ex=k;
-      if(ex>=0)out[ex]=p;else out.push(p);
-    }
+  var dp=todayPnl(),tv=totalValue(),prevVal=tv-dp;
+  if(prevVal>0){
+    var p={date:today,ret:dp/prevVal,amt:dp};
+    var ex=-1;for(var k=0;k<out.length;k++)if(out[k].date===today)ex=k;
+    if(ex>=0)out[ex]=p;else out.push(p);
   }
   return out;
 }
@@ -1163,87 +1217,81 @@ function renderHoldings(){
         '<td><input id="pos_'+p.key+'_c" type="number" step="any" value="'+fmt(costOf(p.key),3)+'" style="width:92px"></td></tr>';
     });
     h+='</table><div class="muted" style="margin:4px 2px">只编辑场内ETF份额与成本价；场外基金用「📋 导入」自动归属。</div><div id="snapHint" class="muted" style="margin:4px 2px"></div>';
-    $('holdTbl').innerHTML=h;
+    $('etfTbl').innerHTML=h;
+    var ow=$('otcWrap');if(ow)ow.style.display='none';
     $('saveBar').style.display='flex';
     $('editBtn').style.display='none';
     var sd=$('snapDate');if(sd)sd.value=todayStr();
     fillEditForm(sd?sd.value:todayStr());
     return;
   }
-  h='<tr><th>资产<br>市值</th><th>现价<br>成本</th><th>当日盈亏</th><th>总盈亏</th><th>占比</th></tr>';
+  var ow=$('otcWrap');if(ow)ow.style.display='';
+  /* ===== 场内 · 股票/ETF（表头按股票） ===== */
+  var eh='<tr><th>资产<br>市值</th><th>现价<br>成本</th><th>当日盈亏</th><th>总盈亏</th><th>占比</th></tr>',ec=0;
   LEGS.forEach(function(l){
-    var lv=legVal(l.key),lc=legCost(l.key),dp=legDayPnl(l.key),pn=lv-lc;
-    var dCls=dp>=0?'up':'dn',pCls=pn>=0?'up':'dn';
-    var color=legColor(l.key);
-    var isOpen=legOpen[l.key];
-    var chev='<span class="chv" onclick="toggleLeg(\''+l.key+'\')">'+(isOpen?'▾':'▸')+'</span>';
-    h+='<tr>'+
-      '<td class="ast-nm"><span class="dot" style="background:'+color+'"></span>'+l.name+chev+'<span class="s">'+fmtMoney2(lv)+'</span></td>'+
-      '<td class="l2"><span>—</span><span class="s">—</span></td>'+
-      '<td class="l2"><span class="'+dCls+'">'+(dp>=0?'+':'')+fmtMoney2(dp)+'</span><span class="s '+dCls+'">'+(dp>=0?'+':'')+fmtPct(dp/(lv-dp||1))+'</span></td>'+
-      '<td class="l2"><span class="'+pCls+'">'+(pn>=0?'+':'')+fmtMoney2(pn)+'</span><span class="s '+pCls+'">'+(pn>=0?'+':'')+fmtPct(lc>0?pn/lc:0)+'</span></td>'+
-      '<td>'+fmtPct(tv>0?lv/tv:0)+'</td></tr>';
-    if(isOpen){
-      var ePos=posInLeg(l.key,'etf'),oPos=posInLeg(l.key,'otc');
-      if(ePos&&shares(ePos.key)>0){
-        var ev=posVal(ePos.key),ec=posCost(ePos.key),ed=posDayPnl(ePos.key),ep=ev-ec;
-        var dC2=ed>=0?'up':'dn',pC2=ep>=0?'up':'dn';
-        var px=latestPrice(ePos.key),cp2=costOf(ePos.key);
-        h+='<tr class="sub">'+
-          '<td class="ast-nm"><span class="dot" style="background:'+ePos.color+'"></span>'+ePos.name+'<span class="cd">'+etfCode(ePos.sym)+'</span><span class="s">'+fmtMoney2(ev)+'</span></td>'+
-          '<td class="l2"><span>'+fmt(px,3)+'</span><span class="s">'+fmt(cp2,3)+'</span></td>'+
-          '<td class="l2"><span class="'+dC2+'">'+(ed>=0?'+':'')+fmtMoney2(ed)+'</span><span class="s '+dC2+'">'+(ed>=0?'+':'')+fmtPct(ed/(ev-ed||1))+'</span></td>'+
-          '<td class="l2"><span class="'+pC2+'">'+(ep>=0?'+':'')+fmtMoney2(ep)+'</span><span class="s '+pC2+'">'+(ep>=0?'+':'')+fmtPct(ec>0?ep/ec:0)+'</span></td>'+
-          '<td>'+fmtPct(tv>0?ev/tv:0)+'</td></tr>';
-      }
-      if(oPos){
-        var ov=posVal(oPos.key),oc=posCost(oPos.key),od=posDayPnl(oPos.key),op=ov-oc;
-        var dC3=od>=0?'up':'dn',pC3=op>=0?'up':'dn';
-        var oOpen=otcOpen[l.key],fr=(S.otc&&S.otc[l.key]&&S.otc[l.key].funds)?S.otc[l.key].funds.length:0;
-        var ob='';
-        if(S.otc&&S.otc[l.key]&&S.otc[l.key].updatedAt===todayStr())ob='<span class="ob ok">当日已更新</span>';
-        var extra=(fr>1)?'<span class="chv" onclick="toggleOtcLeg(\''+l.key+'\')">'+(oOpen?'▾':'▸')+'</span><span class="s">'+fr+' 只</span>':'';
-        h+='<tr class="sub">'+
-          '<td class="ast-nm"><span class="dot" style="background:'+oPos.color+'"></span>'+oPos.name+extra+ob+'<span class="s">'+fmtMoney2(ov)+'</span></td>'+
-          '<td class="l2"><span>—</span><span class="s">'+fmtMoney2(oc)+'</span></td>'+
-          '<td class="l2"><span class="'+dC3+'">'+(od>=0?'+':'')+fmtMoney2(od)+'</span><span class="s '+dC3+'">'+(od>=0?'+':'')+fmtPct(od/(ov-od||1))+'</span></td>'+
-          '<td class="l2"><span class="'+pC3+'">'+(op>=0?'+':'')+fmtMoney2(op)+'</span><span class="s '+pC3+'">'+(op>=0?'+':'')+fmtPct(oc>0?op/oc:0)+'</span></td>'+
-          '<td>'+fmtPct(tv>0?ov/tv:0)+'</td></tr>';
-        if(oOpen&&fr){
-          S.otc[l.key].funds.forEach(function(f){
-            h+='<tr class="sub">'+
-              '<td class="ast-nm" style="padding-left:14px">'+f.name+(f.code?'<span class="cd">'+f.code+'</span>':'')+'<span class="s">'+fmtMoney2(f.value)+'</span></td>'+
-              '<td class="l2"><span>'+(f.nav?fmt(f.nav,4):'—')+'</span><span class="s">'+(f.shares?'份额 '+fmtShares(f.shares):'—')+'</span></td>'+
-              '<td class="l2"><span class="'+(f.dayPct>=0?'up':'dn')+'">'+fmtPct(f.dayPct/100)+'</span></td>'+
-              '<td class="l2"><span class="'+(f.pnlPct>=0?'up':'dn')+'">'+fmtPct(f.pnlPct/100)+'</span></td>'+
-              '<td>'+fmtPct(tv>0?f.value/tv:0)+'</td></tr>';
-          });
-        }else if(oOpen&&!fr){
-          h+='<tr class="sub"><td class="ast-nm" style="padding-left:14px" colspan="5"><span class="muted">暂无场外持仓明细</span></td></tr>';
-        }
-      }
+    var ePos=posInLeg(l.key,'etf');
+    if(!(ePos&&shares(ePos.key)>0))return;
+    ec++;
+    var ev=posVal(ePos.key),ecp=posCost(ePos.key),ed=posDayPnl(ePos.key),ep=ev-ecp;
+    var dC=ed>=0?'up':'dn',pC=ep>=0?'up':'dn';
+    var px=latestPrice(ePos.key),cp2=costOf(ePos.key);
+    eh+='<tr>'+
+      '<td class="ast-nm"><span class="dot" style="background:'+ePos.color+'"></span>'+l.name+'<span class="cd">'+etfCode(ePos.sym)+'</span><span class="s">'+fmtMoney2(ev)+'</span></td>'+
+      '<td class="l2"><span>'+fmt(px,3)+'</span><span class="s">'+fmt(cp2,3)+'</span></td>'+
+      '<td class="l2"><span class="'+dC+'">'+(ed>=0?'+':'')+fmtMoney2(ed)+'</span><span class="s '+dC+'">'+(ed>=0?'+':'')+fmtPct(ed/(ev-ed||1))+'</span></td>'+
+      '<td class="l2"><span class="'+pC+'">'+(ep>=0?'+':'')+fmtMoney2(ep)+'</span><span class="s '+pC+'">'+(ep>=0?'+':'')+fmtPct(ecp>0?ep/ecp:0)+'</span></td>'+
+      '<td>'+fmtPct(tv>0?ev/tv:0)+'</td></tr>';
+  });
+  if(!ec)eh+='<tr><td colspan="5" class="muted">暂无场内持仓（用「✏️ 编辑」填份额+成本价）</td></tr>';
+  $('etfTbl').innerHTML=eh;
+  /* ===== 场外 · 基金（表头按基金） ===== */
+  var oh='<tr><th>资产<br>市值</th><th>净值<br>份额</th><th>当日盈亏</th><th>总盈亏</th><th>占比</th></tr>',oc=0;
+  LEGS.forEach(function(l){
+    var oPos=posInLeg(l.key,'otc');
+    var frArr=(S.otc&&S.otc[l.key]&&S.otc[l.key].funds)||[];
+    var ov=oPos?posVal(oPos.key):0;
+    if(!(ov>0&&frArr.length))return;
+    oc++;
+    if(otcOpen[l.key]===undefined&&frArr.length===1)otcOpen[l.key]=true;
+    var oOpen=!!otcOpen[l.key];
+    var od=oPos?posDayPnl(oPos.key):0,oCost=oPos?posCost(oPos.key):0,op=ov-oCost;
+    var maxNav='';frArr.forEach(function(f){if(f.navDate&&f.navDate>maxNav)maxNav=f.navDate;});
+    var allToday=maxNav===todayStr();
+    var ob=allToday?'<span class="ob ok">当日已更新</span>':(maxNav?'<span class="ob warn">净值 '+maxNav+'</span>':'');
+    var chev='<span class="chv" onclick="toggleOtcLeg(\''+l.key+'\')">'+(oOpen?'▾':'▸')+'</span>';
+    oh+='<tr>'+
+      '<td class="ast-nm"><span class="dot" style="background:'+oPos.color+'"></span>'+oPos.name+chev+ob+'<span class="s">'+fmtMoney2(ov)+'</span></td>'+
+      '<td class="l2"><span>—</span><span class="s">'+frArr.length+' 只</span></td>'+
+      '<td class="l2"><span class="'+(od>=0?'up':'dn')+'">'+(od>=0?'+':'')+fmtMoney2(od)+'</span><span class="s '+(od>=0?'up':'dn')+'">'+(od>=0?'+':'')+fmtPct(od/(ov-od||1))+'</span></td>'+
+      '<td class="l2"><span class="'+(op>=0?'up':'dn')+'">'+(op>=0?'+':'')+fmtMoney2(op)+'</span><span class="s '+(op>=0?'up':'dn')+'">'+(op>=0?'+':'')+fmtPct(oCost>0?op/oCost:0)+'</span></td>'+
+      '<td>'+fmtPct(tv>0?ov/tv:0)+'</td></tr>';
+    if(oOpen){
+      frArr.forEach(function(f){
+        oh+='<tr class="sub">'+
+          '<td class="ast-nm" style="padding-left:14px;max-width:80px;white-space:normal;line-height:1.3;overflow:hidden">'+f.name+(f.code?'<span class="cd">'+f.code+'</span>':'')+'<span class="s">'+fmtMoney2(f.value)+(f.navDate?' · 净值日 '+f.navDate:'')+'</span></td>'+
+          '<td class="l2"><span>'+(f.nav?fmt(f.nav,4):'—')+'</span><span class="s">'+(f.shares?'份额 '+fmtShares(f.shares):'')+'</span></td>'+
+          '<td class="l2"><span class="'+(f.dayAmt==null?'':(f.dayAmt>=0?'up':'dn'))+'">'+(f.dayAmt==null?'—':((f.dayAmt>=0?'+':'')+fmtMoney2(f.dayAmt)))+'</span><span class="s '+(f.dayPct==null?'':(f.dayPct>=0?'up':'dn'))+'">'+(f.dayPct==null?'—':((f.dayPct>=0?'+':'')+fmtPct(f.dayPct)))+'</span></td>'+
+          '<td class="l2"><span class="'+(f.pnl==null?'':(f.pnl>=0?'up':'dn'))+'">'+(f.pnl==null?'—':((f.pnl>=0?'+':'')+fmtMoney2(f.pnl)))+'</span><span class="s '+(f.pnl==null?'':(f.pnl>=0?'up':'dn'))+'">'+(f.pnlPct==null?'—':((f.pnlPct>=0?'+':'')+fmtPct(f.pnlPct)))+'</span></td>'+
+          '<td>'+fmtPct(tv>0?f.value/tv:0)+'</td></tr>';
+      });
     }
   });
-  $('holdTbl').innerHTML=h;
+  if(!oc)oh+='<tr><td colspan="5" class="muted">暂无场外持仓（用「📋 导入」自动归类）</td></tr>';
+  $('otcTbl').innerHTML=oh;
   $('saveBar').style.display='none';
   $('editBtn').style.display='';
 }
-
-
 
 function renderWorkbench(){
   var tv=totalValue(),h='';
   LEGS.forEach(function(l){
     var lv=legVal(l.key),e=posInLeg(l.key,'etf'),code=e?etfCode(e.sym):'';
-    var tw=tgtW(l.key),dev=lv>0&&tw>0?(lv/tv-tw):0;
-    var devCls=Math.abs(dev)>=0.03?'up':'muted';
-    var vs=lv>0?fmtMoney2(lv):'—';
-    var ps=lv>0?((dev>=0?'+':'')+(dev*100).toFixed(1)+'%'):'—';
+    var vs=lv>0?fmtMoney2(lv):'—',dp=legDayPnl(l.key),dCls=dp>=0?'up':'dn';
     h+='<div class="pod">'+
        '<span class="dot" style="background:'+legColor(l.key)+'"></span>'+
        '<span class="nm">'+l.name+(code?'<small>'+code+'</small>':'')+'</span>'+
        '<span class="v">'+vs+'</span>'+
-       '<span class="p '+devCls+'" title="目标 '+Math.round(tw*100)+'% · 当前 '+(tv>0?(lv/tv*100).toFixed(1):'0')+'%">'+ps+'</span>'+
+       '<span class="p '+dCls+'">'+(dp>=0?'+':'')+fmtMoney(dp)+'</span>'+
        '</div>';
   });
   $('legPods').innerHTML=h;
@@ -1686,7 +1734,11 @@ function parsePreview(){
     arr.slice(0,8).forEach(function(f){h+='<div class="fundrow"><span class="n">'+(f.code?f.code+' ':'')+f.name+'</span><span class="v">'+fmtMoney(f.value)+'</span></div>';});
     if(arr.length>8)h+='<div class="muted">…共 '+arr.length+' 只</div>';
   });
-  if(skipped.length)h+='<div class="dn" style="margin-top:5px">未识别 '+skipped.length+' 只（'+skipped[0].name+' 等）已跳过，不会导入</div>';
+  if(skipped.length){
+    h+='<div class="dn" style="margin-top:5px">未识别 '+skipped.length+' 只（不会导入）：</div>';
+    skipped.slice(0,20).forEach(function(f){h+='<div class="fundrow"><span class="n">'+(f.code?f.code+' ':'')+f.name+'</span><span class="v">'+fmtMoney(f.value)+'</span></div>';});
+    if(skipped.length>20)h+='<div class="muted">…共 '+skipped.length+' 只</div>';
+  }
   var impTotal=0;['div','ndx','gold','bond'].forEach(function(L){(byLeg[L]||[]).forEach(function(f){impTotal+=f.value;});});
   h+='<div style="margin-top:6px">本次实际导入 <b>'+fmtMoney(impTotal)+'</b> 元<br>确认导入后：按基金代码每日自动拉净值更新市值/当日盈亏，并自动上传云端。</div>';
   $('impMsg').innerHTML=h;
@@ -1705,7 +1757,7 @@ function confirmImport(){
     var v=0;arr.forEach(function(f){v+=f.value;});
     var pos={value:Math.round(v*100)/100,cost:Math.round(v*100)/100};
     if(impDate===todayStr()){S.positions[L+'_otc']=pos;}
-    S.otc[L]={funds:arr.map(function(f){return {code:f.code,name:f.name,shares:f.shares||0,nav:f.nav||0,value:Math.round(f.value*100)/100,dayPct:0,pnlPct:0};}),dayPnl:0,updatedAt:todayStr()};
+    S.otc[L]={funds:arr.map(function(f){var v=Math.round(f.value*100)/100;return {code:f.code,name:f.name,shares:f.shares||0,nav:f.nav||0,navDate:f.navDate||'',value:v,cost:v,pnl:0,pnlPct:0,dayPct:0,dayAmt:0,prevNav:null};}),dayPnl:0,updatedAt:todayStr()};
     importedLegs.push(legName[L]+'('+arr.length+'只)');
   });
   var snapPos=JSON.parse(JSON.stringify(S.positions));
@@ -1788,7 +1840,7 @@ function checkVersion(){
       }
     }).catch(function(){});
 }
-function saveSyncKey(){S.settings.syncKey=($('syncKey').value||'').trim();S.updatedAt=Date.now();saveLocal();if(S.settings.syncKey)cloudPushNow();else{var el=$('syncMsg');if(el)el.textContent='Key已清除(仅本地)';}}
+function saveSyncKey(){var key=($('syncKey').value||'').trim();S.settings.syncKey=key;localStorage.setItem('paistar_skey_'+activeAcct(),key);S.updatedAt=Date.now();saveLocal();if(key)cloudPushNow();else{var el=$('syncMsg');if(el)el.textContent='Key已清除(仅本地)';}}
 function cloudPushNow(){cloudWrite(S).then(function(ok){var el=$('syncMsg');if(el)el.textContent=ok?('已上传 '+timeStr()):'上传失败';});}
 function cloudPull(){
   var el=$('syncMsg');
@@ -1804,7 +1856,7 @@ function exportJson(){var b=new Blob([JSON.stringify(S,null,2)],{type:'applicati
 function importJson(){var inp=document.createElement('input');inp.type='file';inp.accept='.json';inp.onchange=function(){var f=inp.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){try{var p=JSON.parse(rd.result);if(p&&p.settings){S=p;saveLocal();renderAll();alert('导入成功');}else{alert('格式不对');}}catch(e){alert('解析失败');}};rd.readAsText(f);};inp.click();}
 function clearAll(){
   if(!confirm('确定重置全部数据？将清空本地并让云端归零，不可恢复。'))return;
-  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(dataKeyFor(activeAcct()));
   var d=defaults(); d.updatedAt=Date.now()+1; S=d; saveLocal();
   location.reload();
 }
@@ -1844,9 +1896,13 @@ function refreshOtcNavs(){
         if(a&&a.length){
           var last=a[a.length-1],prev=a.length>1?a[a.length-2]:null;
           f.nav=last.nav;
+          f.navDate=last.date;
           f.value=Math.round(f.shares*last.nav*100)/100;
-          if(prev&&prev.nav>0)f.dayPct=last.nav/prev.nav-1;
-          f.prevNav=prev?prev.nav:f.nav;
+          if(f.cost==null)f.cost=f.value;
+          f.pnl=Math.round((f.value-f.cost)*100)/100;
+          f.pnlPct=f.cost>0?f.pnl/f.cost:0;
+          if(prev&&prev.nav>0){f.dayPct=last.nav/prev.nav-1;f.dayAmt=Math.round(f.shares*(last.nav-prev.nav)*100)/100;f.prevNav=prev.nav;}
+          else{f.dayPct=0;f.dayAmt=0;}
           n++;
         }
         legV+=(f.value||0);
@@ -1856,6 +1912,7 @@ function refreshOtcNavs(){
         if(!S.otc[l.key])S.otc[l.key]={funds:[],dayPnl:0,updatedAt:''};
         S.otc[l.key].value=Math.round(legV*100)/100;
         S.otc[l.key].dayPnl=Math.round(legDP*100)/100;
+        S.otc[l.key].updatedAt=todayStr();
         if(S.positions[l.key+'_otc'])S.positions[l.key+'_otc'].value=Math.round(legV*100)/100;
       }
     });
@@ -1868,6 +1925,8 @@ function init(){
   checkVersion();
   loadLocal();
   var sk=$('syncKey');if(sk)sk.value=S.settings.syncKey||'';
+  var ac=activeAcct(),seg=document.querySelectorAll('#acctSeg button');
+  for(var i=0;i<seg.length;i++)seg[i].className=(seg[i].getAttribute('data-a')===ac)?'on':'';
   if(S.settings.syncKey){cloudPull();}
   setInterval(function(){if(!editing)cloudPull();},60000);
   renderAll();
