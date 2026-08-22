@@ -645,7 +645,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 <div class="mask" id="manMask" style="display:none" onclick="if(event.target===this)closeManual()">
   <div class="modal" style="max-height:84vh;overflow-y:auto">
         <h3>📖 操作手册 · V1.1.0（红利20 / 纳指30 / 黄金25 / 债25）</h3>
-    <div class="muted" style="margin-bottom:8px">静态四腿 + 周定投(每周2,885) + 纳指/红利跌破250日线双倍 + 月检≥3pp再平衡｜不择时、不熔断｜满仓后永久持有</div>
+    <div class="muted" style="margin-bottom:8px">静态四腿 + 周定投(每周2,885) + 纳指/红利跌破250日线双倍 + 月检≥5pp再平衡｜不择时、不熔断｜满仓后永久持有</div>
     <div class="man-sec"><b>一、配置（可改）</b>
       <div>· 目标：红利 20% / 纳指 30% / 黄金 25% / 债 25%——在「调仓页」可修改保存，改完自动同步定投看板与各腿偏离提示</div>
       <div>· 场内：ETF（512890 / 513100 / 518880 / 511010）手动填 份额+成本价</div>
@@ -661,7 +661,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
       <div>· 导入后自动拉最新净值（每天打开也会自动拉），更新市值/当日盈亏，并自动上传云端</div>
     </div>
     <div class="man-sec"><b>四、满仓后（永久持有）</b>
-      <div>· 每月第一个交易日：任一腿偏离目标 ≥3pp → 调回（按「优先场内/场外」执行）</div>
+      <div>· 每月第一个交易日：任一腿偏离目标 ≥5pp → 调回（按「优先场内/场外」执行）</div>
       <div>· 不择时、不熔断</div>
     </div>
     <div class="man-sec"><b>五、纪律（最重要）</b>
@@ -682,7 +682,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 </div>
 
 
-<script>var PAGE_VERSION='v1.2.6';
+<script>var PAGE_VERSION='v1.2.7';
 var LS_KEY='paistar_v42';
 var DEFAULT_ACCOUNT='paistar';
 var ACCOUNTS=[
