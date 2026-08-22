@@ -682,7 +682,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 </div>
 
 
-<script>var PAGE_VERSION='v1.2.3';
+<script>var PAGE_VERSION='v1.2.5';
 var LS_KEY='paistar_v42';
 var DEFAULT_ACCOUNT='paistar';
 var ACCOUNTS=[
@@ -1264,9 +1264,8 @@ function renderHoldings(){
     oc++;
     var oOpen=!!otcOpen[l.key];
     var od=oPos?posDayPnl(oPos.key):0,oCost=oPos?posCost(oPos.key):0,op=ov-oCost;
-    var maxNav='';frArr.forEach(function(f){if(f.navDate&&f.navDate>maxNav)maxNav=f.navDate;});
-    var allToday=maxNav===todayStr();
-    var ob=allToday?'<span class="ob ok">当日已更新</span>':(maxNav?'<span class="ob warn">净值 '+maxNav+'</span>':'');
+    var allToday=frArr.length>0;frArr.forEach(function(f){if(!f.navDate||f.navDate!==todayStr())allToday=false;});
+    var ob=allToday?'<span class="ob ok">已更新</span>':'<span class="ob warn">未更新</span>';
     var chev='<span class="chv" onclick="toggleOtcLeg(\''+l.key+'\')">'+(oOpen?'▾':'▸')+'</span>';
     oh+='<tr class="otc-leg">'+
       '<td class="ast-nm"><span class="dot" style="background:'+oPos.color+'"></span>'+oPos.name+chev+'<span class="s">'+fmtMoney2(ov)+'</span></td>'+
