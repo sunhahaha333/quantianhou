@@ -643,7 +643,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
     </div>
     <div class="man-sec"><b>二、定投（每周，30万本金）</b>
       <div>· 每周预算 2,885 元：红利低波 577 / 纳指 866 / 黄金 721 / 债 721（随目标配比联动）</div>
-      <div>· 智能加倍：红利低波或纳指跌破各自250日线 → 该腿×2，整体缩放回 2,885（固定预算不超支）；黄金/债恒定</div>
+      <div>· 智能加倍：红利低波或纳指跌破各自250日线 → 该腿×2（其余腿不变，合计相应增加）；黄金/债恒定</div>
       <div>· 周五晚查 MA250（定投看板自动显示），周一按看板金额执行</div>
     </div>
     <div class="man-sec"><b>三、场外基金导入与自动更新</b>
@@ -672,7 +672,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 </div>
 
 
-<script>var PAGE_VERSION='v1.2.1';
+<script>var PAGE_VERSION='v1.2.2';
 var LS_KEY='paistar_v42';
 var DEFAULT_ACCOUNT='paistar';
 var ACCOUNTS=[
@@ -1252,7 +1252,6 @@ function renderHoldings(){
     var ov=oPos?posVal(oPos.key):0;
     if(!(ov>0&&frArr.length))return;
     oc++;
-    if(otcOpen[l.key]===undefined&&frArr.length===1)otcOpen[l.key]=true;
     var oOpen=!!otcOpen[l.key];
     var od=oPos?posDayPnl(oPos.key):0,oCost=oPos?posCost(oPos.key):0,op=ov-oCost;
     var maxNav='';frArr.forEach(function(f){if(f.navDate&&f.navDate>maxNav)maxNav=f.navDate;});
@@ -1268,7 +1267,7 @@ function renderHoldings(){
     if(oOpen){
       frArr.forEach(function(f){
         oh+='<tr class="sub">'+
-          '<td class="ast-nm" style="padding-left:14px;max-width:80px;white-space:normal;line-height:1.3;overflow:hidden">'+f.name+(f.code?'<span class="cd">'+f.code+'</span>':'')+'<span class="s">'+fmtMoney2(f.value)+(f.navDate?' · 净值日 '+f.navDate:'')+'</span></td>'+
+          '<td class="ast-nm" style="padding-left:14px;max-width:80px;white-space:normal;line-height:1.3;overflow:hidden">'+f.name+(f.code?'<span class="cd">'+f.code+'</span>':'')+'<span class="s">'+fmtMoney2(f.value)+'</span></td>'+
           '<td class="l2"><span>'+(f.nav?fmt(f.nav,4):'—')+'</span><span class="s">'+(f.shares?'份额 '+fmtShares(f.shares):'')+'</span></td>'+
           '<td class="l2"><span class="'+(f.dayAmt==null?'':(f.dayAmt>=0?'up':'dn'))+'">'+(f.dayAmt==null?'—':((f.dayAmt>=0?'+':'')+fmtMoney2(f.dayAmt)))+'</span><span class="s '+(f.dayPct==null?'':(f.dayPct>=0?'up':'dn'))+'">'+(f.dayPct==null?'—':((f.dayPct>=0?'+':'')+fmtPct(f.dayPct)))+'</span></td>'+
           '<td class="l2"><span class="'+(f.pnl==null?'':(f.pnl>=0?'up':'dn'))+'">'+(f.pnl==null?'—':((f.pnl>=0?'+':'')+fmtMoney2(f.pnl)))+'</span><span class="s '+(f.pnl==null?'':(f.pnl>=0?'up':'dn'))+'">'+(f.pnlPct==null?'—':((f.pnlPct>=0?'+':'')+fmtPct(f.pnlPct)))+'</span></td>'+
@@ -1372,12 +1371,10 @@ function renderIndicators(){
   var mN=(nI&&!nI.ok)?2:1, mD=(dI&&!dI.ok)?2:1;
   function sc(md,mn){
     var raw={div:base.div*(md===2?2:1),ndx:base.ndx*(mn===2?2:1),gold:base.gold,bond:base.bond};
-    var tot=raw.div+raw.ndx+raw.gold+raw.bond;
-    var o={};LEGS.forEach(function(l){o[l.key]=Math.round(raw[l.key]/tot*budget);});
+    var o={};LEGS.forEach(function(l){o[l.key]=Math.round(raw[l.key]);});
     o.tot=o.div+o.ndx+o.gold+o.bond;return o;
   }
-  var s00=sc(1,1),sD=sc(2,1),sN=sc(1,2),sB=sc(2,2);
-  var cur=(mD===2?sD:(mN===2?sN:s00));
+  var cur=sc(mD,mN);
   var h='';
   h+='<div class="rowline" style="align-items:flex-end"><label class="muted" style="flex:1">每周定投预算（元）<br><input id="dcaWeekly" type="number" value="'+budget+'" style="width:100%;padding:7px;border-radius:8px;border:1px solid #d5ebf1;background:#ffffff;color:#1f3a40;box-sizing:border-box"></label><button onclick="saveDcaWeekly()">保存</button></div>';
   h+='<div class="adv">';
@@ -1397,7 +1394,7 @@ function renderIndicators(){
      '<tr><td><span class="dot" style="background:'+legColor('gold')+'"></span>黄金</td><td>'+fmtMoney(cur.gold)+'</td></tr>'+
      '<tr><td><span class="dot" style="background:'+legColor('bond')+'"></span>债</td><td>'+fmtMoney(cur.bond)+'</td></tr>'+
      '<tr><td><b>合计</b></td><td><b>'+fmtMoney(cur.tot)+'</b></td></tr></table></div>';
-  h+='<div class="muted" style="margin-top:6px;font-size:12px">规则：红利/纳指跌破各自250日线 → 该腿×2，整体缩放回每周预算（不超支）；黄金/债恒定买入。周五晚看MA250，周一执行。30万本金默认每周 2,885 元。</div>';
+  h+='<div class="muted" style="margin-top:6px;font-size:12px">规则：红利/纳指跌破各自250日线 → 该腿×2（其余腿不变，合计相应增加）；黄金/债恒定。周五晚看MA250，周一执行。30万本金默认每周 2,885 元。</div>';
   $('chips').innerHTML=h;
 }
 function saveDcaWeekly(){S.settings.dcaWeekly=Math.round(parseFloat($('dcaWeekly').value)||2885);S.updatedAt=Date.now();saveLocal();renderIndicators();}
@@ -1930,6 +1927,7 @@ function init(){
   if(S.settings.syncKey){cloudPull();}
   setInterval(function(){if(!editing)cloudPull();},60000);
   renderAll();
+  var _ew=0;(function waitEcharts(){if(window.echarts){renderPie();renderChart();}else if(_ew++<50)setTimeout(waitEcharts,400);})();
   var lastNav=S.settings.lastNavRefresh||'';
   if(lastNav!==todayStr()){
     refreshOtcNavs().then(function(rr){
