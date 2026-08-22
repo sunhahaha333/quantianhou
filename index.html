@@ -610,9 +610,9 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 <div class="mask" id="impMask" style="display:none" onclick="if(event.target===this)closeImp()">
   <div class="modal">
     <h3 id="impTitle">📋 场外基金导入</h3>
-    <div id="impHint" class="muted">把持仓明细整段复制粘贴（每行：代码 / 名称 / … / 持有份额 / 份额日期 / 净值 / 净值日期 / 资产 / 币种 / 分红方式，任意销售机构：天天基金/基金E账户/蚂蚁/盈米…通用）。自动按名称归类：红利低波 / 纳指(含科技·互联网·全球·QDII) / 黄金 / 债（004010、货币基金归债）；识别不到的默认跳过。</div>
+    <div id="impHint" class="muted">把持仓明细整段复制粘贴（每行：代码 / 名称 / … / 持有份额 / 份额日期 / 净值 / 净值日期 / 资产 / 币种 / 分红方式，任意销售机构：天天基金/基金E账户/蚂蚁/盈米…通用）。自动按名称归类：红利 / 纳指(含科技·互联网·全球·QDII) / 黄金 / 债（004010、货币基金归债）；识别不到的默认跳过。</div>
     <pre id="impExample">000218	国泰黄金ETF联接A	前收费	国泰基金	…	47.89	2026/08/17	3.4379	2026/08/17	164.64	人民币	红利转投
-008163	南方标普红利低波50ETF联接A	前收费	南方基金	…	4325.14	2026/08/17	1.0268	2026/08/17	4441.05	人民币	红利转投</pre>
+008163	南方标普红利50ETF联接A	前收费	南方基金	…	4325.14	2026/08/17	1.0268	2026/08/17	4441.05	人民币	红利转投</pre>
     <div class="rowline">
       <label class="muted" style="flex:0 0 104px">对应日期<br><input id="impDate" type="date"></label>
       <span class="muted">选某天=把这份持仓记到那天</span>
@@ -620,7 +620,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
     <div class="rowline">
       <label class="muted" style="flex:0 0 104px">未识别归属<br>
         <select id="impDef">
-          <option value="div">红利低波</option>
+          <option value="div">红利</option>
           <option value="ndx">纳指</option>
           <option value="gold">黄金</option>
           <option value="bond">债</option>
@@ -647,13 +647,13 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
         <h3>📖 操作手册 · V1.1.0（红利20 / 纳指30 / 黄金25 / 债25）</h3>
     <div class="muted" style="margin-bottom:8px">静态四腿 + 周定投(每周2,885) + 纳指/红利跌破250日线双倍 + 月检≥3pp再平衡｜不择时、不熔断｜满仓后永久持有</div>
     <div class="man-sec"><b>一、配置（可改）</b>
-      <div>· 目标：红利低波 20% / 纳指 30% / 黄金 25% / 债 25%——在「调仓页」可修改保存，改完自动同步定投看板与各腿偏离提示</div>
+      <div>· 目标：红利 20% / 纳指 30% / 黄金 25% / 债 25%——在「调仓页」可修改保存，改完自动同步定投看板与各腿偏离提示</div>
       <div>· 场内：ETF（512890 / 513100 / 518880 / 511010）手动填 份额+成本价</div>
       <div>· 场外：基金持仓表格导入（自动归类：红利/纳指/黄金/债，货币、004010 归债），导入后自动拉净值并上传云端</div>
     </div>
     <div class="man-sec"><b>二、定投（每周，30万本金）</b>
-      <div>· 每周预算 2,885 元：红利低波 577 / 纳指 866 / 黄金 721 / 债 721（随目标配比联动）</div>
-      <div>· 智能加倍：红利低波或纳指跌破各自250日线 → 该腿×2（其余腿不变，合计相应增加）；黄金/债恒定</div>
+      <div>· 每周预算 2,885 元：红利 577 / 纳指 866 / 黄金 721 / 债 721（随目标配比联动）</div>
+      <div>· 智能加倍：红利或纳指跌破各自250日线 → 该腿×2（其余腿不变，合计相应增加）；黄金/债恒定</div>
       <div>· 周五晚查 MA250（定投看板自动显示），周一按看板金额执行</div>
     </div>
     <div class="man-sec"><b>三、场外基金导入与自动更新</b>
@@ -682,7 +682,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 </div>
 
 
-<script>var PAGE_VERSION='v1.2.5';
+<script>var PAGE_VERSION='v1.2.6';
 var LS_KEY='paistar_v42';
 var DEFAULT_ACCOUNT='paistar';
 var ACCOUNTS=[
@@ -709,8 +709,8 @@ function switchAcct(k){
 }
 var DEFAULT_SYNC_KEY='PT3kN0uaDxK2YXLmpcD6Mxu9';
 var POS=[
- {key:'div_etf',name:'红利低波·场内',sym:'sh512890',leg:'div',kind:'etf',color:'#4da3ff'},
- {key:'div_otc',name:'红利低波·场外',leg:'div',kind:'otc',color:'#7fb8ff'},
+ {key:'div_etf',name:'红利·场内',sym:'sh512890',leg:'div',kind:'etf',color:'#4da3ff'},
+ {key:'div_otc',name:'红利·场外',leg:'div',kind:'otc',color:'#7fb8ff'},
  {key:'ndx_etf',name:'纳指·场内',sym:'sh513100',leg:'ndx',kind:'etf',color:'#ff9f43'},
  {key:'ndx_otc',name:'纳指·场外',leg:'ndx',kind:'otc',color:'#ffc793'},
  {key:'gold_etf',name:'黄金·场内',sym:'sh518880',leg:'gold',kind:'etf',color:'#f0b90b'},
@@ -718,7 +718,7 @@ var POS=[
  {key:'bond_etf',name:'债·场内',sym:'sh511010',leg:'bond',kind:'etf',color:'#2dd4bf'},
  {key:'bond_otc',name:'债·场外',leg:'bond',kind:'otc',color:'#8fe9da'}
 ];
-var LEGS=[{key:'div',name:'红利低波'},{key:'ndx',name:'纳指'},{key:'gold',name:'黄金'},{key:'bond',name:'债'}];
+var LEGS=[{key:'div',name:'红利'},{key:'ndx',name:'纳指'},{key:'gold',name:'黄金'},{key:'bond',name:'债'}];
 var LEGSYM={div:'sh512890',ndx:'sh513100',gold:'sh518880',bond:'sh511010'};
 var TIMED=[];
 var S3M={0:2.0,1:1.0};
@@ -1264,18 +1264,16 @@ function renderHoldings(){
     oc++;
     var oOpen=!!otcOpen[l.key];
     var od=oPos?posDayPnl(oPos.key):0,oCost=oPos?posCost(oPos.key):0,op=ov-oCost;
-    var allToday=frArr.length>0;frArr.forEach(function(f){if(!f.navDate||f.navDate!==todayStr())allToday=false;});
-    var ob=allToday?'<span class="ob ok">已更新</span>':'<span class="ob warn">未更新</span>';
     var chev='<span class="chv" onclick="toggleOtcLeg(\''+l.key+'\')">'+(oOpen?'▾':'▸')+'</span>';
     oh+='<tr class="otc-leg">'+
       '<td class="ast-nm"><span class="dot" style="background:'+oPos.color+'"></span>'+oPos.name+chev+'<span class="s">'+fmtMoney2(ov)+'</span></td>'+
-      '<td class="l2"><span>—</span><span class="s">'+frArr.length+' 只'+(ob?' '+ob:'')+'</span></td>'+
+      '<td class="l2"><span>—</span><span class="s">'+frArr.length+' 只</span></td>'+
       '<td class="l2"><span class="'+(od>=0?'up':'dn')+'">'+(od>=0?'+':'')+fmtMoney2(od)+'</span><span class="s '+(od>=0?'up':'dn')+'">'+(od>=0?'+':'')+fmtPct(od/(ov-od||1))+'</span></td>'+
       '<td class="l2"><span class="'+(op>=0?'up':'dn')+'">'+(op>=0?'+':'')+fmtMoney2(op)+'</span><span class="s '+(op>=0?'up':'dn')+'">'+(op>=0?'+':'')+fmtPct(oCost>0?op/oCost:0)+'</span></td></tr>';
     if(oOpen){
       frArr.forEach(function(f){
         oh+='<tr class="sub">'+
-          '<td class="ast-nm" style="padding-left:12px;max-width:118px;white-space:normal;line-height:1.3;overflow:hidden">'+f.name+(f.code?'<span class="cd">'+f.code+'</span>':'')+'<span class="s">'+fmtMoney2(f.value)+'</span></td>'+
+          '<td class="ast-nm" style="padding-left:12px;white-space:normal;line-height:1.3;overflow:hidden">'+f.name+(f.code?'<span class="cd">'+f.code+'</span>':'')+(f.navDate===todayStr()?'<span class="ob ok">已更新</span>':'<span class="ob warn">未更新</span>')+'<span class="s">'+fmtMoney2(f.value)+'</span></td>'+
           '<td class="l2"><span>'+(f.nav?fmt(f.nav,3):'—')+'</span><span class="s">'+(f.shares?'份 '+fmtShares(f.shares):'')+'</span></td>'+
           '<td class="l2"><span class="'+(f.dayAmt==null?'':(f.dayAmt>=0?'up':'dn'))+'">'+(f.dayAmt==null?'—':((f.dayAmt>=0?'+':'')+fmtMoney2(f.dayAmt)))+'</span><span class="s '+(f.dayPct==null?'':(f.dayPct>=0?'up':'dn'))+'">'+(f.dayPct==null?'—':((f.dayPct>=0?'+':'')+fmtPct(f.dayPct)))+'</span></td>'+
           '<td class="l2"><span class="'+(f.pnl==null?'':(f.pnl>=0?'up':'dn'))+'">'+(f.pnl==null?'—':((f.pnl>=0?'+':'')+fmtMoney2(f.pnl)))+'</span><span class="s '+(f.pnl==null?'':(f.pnl>=0?'up':'dn'))+'">'+(f.pnlPct==null?'—':((f.pnlPct>=0?'+':'')+fmtPct(f.pnlPct)))+'</span></td></tr>';
@@ -1392,11 +1390,11 @@ function renderIndicators(){
       '<div class="ar-d muted">'+(info?('收盘 '+fmt(info.close,3)+' ｜ MA250 '+fmt(info.ma,3)+' ｜ 偏移 '+fmtPct(info.dist)):'数据不足')+'</div></div>';
   }
   stCard('纳指（040046 / 513100）',nI,mN);
-  stCard('红利低波（007466 / 512890）',dI,mD);
+  stCard('红利（007466 / 512890）',dI,mD);
   h+='</div>';
   h+='<div style="margin-top:10px;font-weight:700;color:#ffd78a">本周建议（'+todayStr()+'）</div>';
   h+='<div class="wrap"><table class="tbl"><tr><th>腿</th><th>金额(元)</th></tr>'+
-     '<tr><td><span class="dot" style="background:'+legColor('div')+'"></span>红利低波</td><td>'+fmtMoney(cur.div)+'</td></tr>'+
+     '<tr><td><span class="dot" style="background:'+legColor('div')+'"></span>红利</td><td>'+fmtMoney(cur.div)+'</td></tr>'+
      '<tr><td><span class="dot" style="background:'+legColor('ndx')+'"></span>纳指</td><td>'+fmtMoney(cur.ndx)+'</td></tr>'+
      '<tr><td><span class="dot" style="background:'+legColor('gold')+'"></span>黄金</td><td>'+fmtMoney(cur.gold)+'</td></tr>'+
      '<tr><td><span class="dot" style="background:'+legColor('bond')+'"></span>债</td><td>'+fmtMoney(cur.bond)+'</td></tr>'+
@@ -1617,7 +1615,7 @@ function renderCalc(){
     non.forEach(function(k){tnn+=tgtW(k);});
     non.forEach(function(k){tgt[k]=tv*tgtW(k)/tnn;});
     tgt['ndx']=cur['ndx'];
-    note='三角平衡（不含纳指）：红利低波/黄金/债 按目标比例（'+fmt(tgtW('div')*100,0)+':'+fmt(tgtW('gold')*100,0)+':'+fmt(tgtW('bond')*100,0)+'）调平，纳指保持漂移不调。';
+    note='三角平衡（不含纳指）：红利/黄金/债 按目标比例（'+fmt(tgtW('div')*100,0)+':'+fmt(tgtW('gold')*100,0)+':'+fmt(tgtW('bond')*100,0)+'）调平，纳指保持漂移不调。';
   }else if(balMode==='4'){
     LEGS.forEach(function(l){tgt[l.key]=tv*tgtW(l.key);});
     note='四角平衡（含纳指）：四腿调回目标——红利'+fmt(tgtW('div')*100,0)+'% / 纳指'+fmt(tgtW('ndx')*100,0)+'% / 黄金'+fmt(tgtW('gold')*100,0)+'% / 债'+fmt(tgtW('bond')*100,0)+'%。';
@@ -1675,7 +1673,7 @@ function openImp(){pendingImport=null;$('impMask').style.display='flex';$('impTe
 function closeImp(){$('impMask').style.display='none';}
 function parseImport(text){
   var KEYS=[
-    {k:'div',ws:['红利低波','红利','512890','007466']},
+    {k:'div',ws:['红利','红利','512890','007466']},
     {k:'ndx_otc',ws:['纳指场外','纳指·场外','场外纳指','040046','016454','016453','且慢']},
     {k:'gold',ws:['黄金','518880','000218']},
     {k:'bond',ws:['债','国债','511010','004010','政金债','国开债','利率债','纯债']}
@@ -1729,7 +1727,7 @@ function parsePreview(){
     (byLeg[L]=byLeg[L]||[]).push(f);
   });
   q.byLeg=byLeg; q.skipped=skipped;
-  var legName={div:'红利低波',ndx:'纳指',gold:'黄金',bond:'债'};
+  var legName={div:'红利',ndx:'纳指',gold:'黄金',bond:'债'};
   var h='解析到 <b>'+q.funds.length+'</b> 只（按基金代码合并重复），自动归属：<br>';
   ['div','ndx','gold','bond'].forEach(function(L){
     var arr=byLeg[L];if(!arr)return;
@@ -1753,7 +1751,7 @@ function confirmImport(){
   var q=pendingImport;
   var idEl=$('impDate');var impDate=(idEl&&idEl.value)?idEl.value:todayStr();
   var byLeg=q.byLeg||{};
-  var legName={div:'红利低波',ndx:'纳指',gold:'黄金',bond:'债'};
+  var legName={div:'红利',ndx:'纳指',gold:'黄金',bond:'债'};
   if(!S.otc)S.otc={};
   var importedLegs=[];
   ['div','ndx','gold','bond'].forEach(function(L){
