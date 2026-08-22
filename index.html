@@ -391,6 +391,10 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 .pod .p{font-size:9.5px;font-weight:700;width:44px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .wb-right{display:flex;flex-direction:column;gap:8px;min-width:0}
 .wb-right #pieChart{width:100%;height:112px;flex:none}
+/* 场外表：允许换行收缩，数字保持单行，手机横向完整显示 */
+#otcTbl th,#otcTbl td{white-space:normal}
+#otcTbl td .s,#otcTbl td b,#otcTbl td .l2 span{white-space:nowrap}
+#otcTbl .ast-nm .dot{flex:none;display:inline-block;vertical-align:1px}
 .wb-right #pieLegend{display:flex;flex-direction:column;justify-content:center;gap:4px}
 .wb-right #pieLegend .legrow{font-size:9.5px;padding:0}
 .wb-right #pieLegend .legrow .dot{width:8px;height:8px}
@@ -672,7 +676,7 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 </div>
 
 
-<script>var PAGE_VERSION='v1.2.2';
+<script>var PAGE_VERSION='v1.2.3';
 var LS_KEY='paistar_v42';
 var DEFAULT_ACCOUNT='paistar';
 var ACCOUNTS=[
@@ -1245,7 +1249,7 @@ function renderHoldings(){
   if(!ec)eh+='<tr><td colspan="5" class="muted">暂无场内持仓（用「✏️ 编辑」填份额+成本价）</td></tr>';
   $('etfTbl').innerHTML=eh;
   /* ===== 场外 · 基金（表头按基金） ===== */
-  var oh='<tr><th>资产<br>市值</th><th>净值<br>份额</th><th>当日盈亏</th><th>总盈亏</th><th>占比</th></tr>',oc=0;
+  var oh='<tr><th>资产<br>市值</th><th>净值<br>份额</th><th>当日盈亏</th><th>总盈亏</th></tr>',oc=0;
   LEGS.forEach(function(l){
     var oPos=posInLeg(l.key,'otc');
     var frArr=(S.otc&&S.otc[l.key]&&S.otc[l.key].funds)||[];
@@ -1262,20 +1266,18 @@ function renderHoldings(){
       '<td class="ast-nm"><span class="dot" style="background:'+oPos.color+'"></span>'+oPos.name+chev+ob+'<span class="s">'+fmtMoney2(ov)+'</span></td>'+
       '<td class="l2"><span>—</span><span class="s">'+frArr.length+' 只</span></td>'+
       '<td class="l2"><span class="'+(od>=0?'up':'dn')+'">'+(od>=0?'+':'')+fmtMoney2(od)+'</span><span class="s '+(od>=0?'up':'dn')+'">'+(od>=0?'+':'')+fmtPct(od/(ov-od||1))+'</span></td>'+
-      '<td class="l2"><span class="'+(op>=0?'up':'dn')+'">'+(op>=0?'+':'')+fmtMoney2(op)+'</span><span class="s '+(op>=0?'up':'dn')+'">'+(op>=0?'+':'')+fmtPct(oCost>0?op/oCost:0)+'</span></td>'+
-      '<td>'+fmtPct(tv>0?ov/tv:0)+'</td></tr>';
+      '<td class="l2"><span class="'+(op>=0?'up':'dn')+'">'+(op>=0?'+':'')+fmtMoney2(op)+'</span><span class="s '+(op>=0?'up':'dn')+'">'+(op>=0?'+':'')+fmtPct(oCost>0?op/oCost:0)+'</span></td></tr>';
     if(oOpen){
       frArr.forEach(function(f){
         oh+='<tr class="sub">'+
-          '<td class="ast-nm" style="padding-left:14px;max-width:80px;white-space:normal;line-height:1.3;overflow:hidden">'+f.name+(f.code?'<span class="cd">'+f.code+'</span>':'')+'<span class="s">'+fmtMoney2(f.value)+'</span></td>'+
-          '<td class="l2"><span>'+(f.nav?fmt(f.nav,4):'—')+'</span><span class="s">'+(f.shares?'份额 '+fmtShares(f.shares):'')+'</span></td>'+
+          '<td class="ast-nm" style="padding-left:12px;max-width:118px;white-space:normal;line-height:1.3;overflow:hidden">'+f.name+(f.code?'<span class="cd">'+f.code+'</span>':'')+'<span class="s">'+fmtMoney2(f.value)+'</span></td>'+
+          '<td class="l2"><span>'+(f.nav?fmt(f.nav,3):'—')+'</span><span class="s">'+(f.shares?'份 '+fmtShares(f.shares):'')+'</span></td>'+
           '<td class="l2"><span class="'+(f.dayAmt==null?'':(f.dayAmt>=0?'up':'dn'))+'">'+(f.dayAmt==null?'—':((f.dayAmt>=0?'+':'')+fmtMoney2(f.dayAmt)))+'</span><span class="s '+(f.dayPct==null?'':(f.dayPct>=0?'up':'dn'))+'">'+(f.dayPct==null?'—':((f.dayPct>=0?'+':'')+fmtPct(f.dayPct)))+'</span></td>'+
-          '<td class="l2"><span class="'+(f.pnl==null?'':(f.pnl>=0?'up':'dn'))+'">'+(f.pnl==null?'—':((f.pnl>=0?'+':'')+fmtMoney2(f.pnl)))+'</span><span class="s '+(f.pnl==null?'':(f.pnl>=0?'up':'dn'))+'">'+(f.pnlPct==null?'—':((f.pnlPct>=0?'+':'')+fmtPct(f.pnlPct)))+'</span></td>'+
-          '<td>'+fmtPct(tv>0?f.value/tv:0)+'</td></tr>';
+          '<td class="l2"><span class="'+(f.pnl==null?'':(f.pnl>=0?'up':'dn'))+'">'+(f.pnl==null?'—':((f.pnl>=0?'+':'')+fmtMoney2(f.pnl)))+'</span><span class="s '+(f.pnl==null?'':(f.pnl>=0?'up':'dn'))+'">'+(f.pnlPct==null?'—':((f.pnlPct>=0?'+':'')+fmtPct(f.pnlPct)))+'</span></td></tr>';
       });
     }
   });
-  if(!oc)oh+='<tr><td colspan="5" class="muted">暂无场外持仓（用「📋 导入」自动归类）</td></tr>';
+  if(!oc)oh+='<tr><td colspan="4" class="muted">暂无场外持仓（用「📋 导入」自动归类）</td></tr>';
   $('otcTbl').innerHTML=oh;
   $('saveBar').style.display='none';
   $('editBtn').style.display='';
