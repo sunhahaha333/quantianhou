@@ -391,10 +391,16 @@ summary{cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;padding:4
 .pod .p{font-size:9.5px;font-weight:700;width:44px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .wb-right{display:flex;flex-direction:column;gap:8px;min-width:0}
 .wb-right #pieChart{width:100%;height:112px;flex:none}
-/* 场外表：允许换行收缩，数字保持单行，手机横向完整显示 */
-#otcTbl th,#otcTbl td{white-space:normal}
-#otcTbl td .s,#otcTbl td b,#otcTbl td .l2 span{white-space:nowrap}
+/* 场外表：固定布局 + 显式列宽，数字单行，手机横向完整显示 */
+#otcTbl{table-layout:fixed;width:100%}
+#otcTbl th,#otcTbl td{white-space:normal;word-break:break-all}
+#otcTbl th:nth-child(1),#otcTbl td:nth-child(1){width:36%}
+#otcTbl th:nth-child(2){width:22%}
+#otcTbl th:nth-child(3),#otcTbl td:nth-child(3){width:22%}
+#otcTbl th:nth-child(4),#otcTbl td:nth-child(4){width:20%}
+#otcTbl td .s,#otcTbl td .l2 span{white-space:nowrap}
 #otcTbl .ast-nm .dot{flex:none;display:inline-block;vertical-align:1px}
+#otcTbl .otc-leg .ast-nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wb-right #pieLegend{display:flex;flex-direction:column;justify-content:center;gap:4px}
 .wb-right #pieLegend .legrow{font-size:9.5px;padding:0}
 .wb-right #pieLegend .legrow .dot{width:8px;height:8px}
@@ -1262,9 +1268,9 @@ function renderHoldings(){
     var allToday=maxNav===todayStr();
     var ob=allToday?'<span class="ob ok">当日已更新</span>':(maxNav?'<span class="ob warn">净值 '+maxNav+'</span>':'');
     var chev='<span class="chv" onclick="toggleOtcLeg(\''+l.key+'\')">'+(oOpen?'▾':'▸')+'</span>';
-    oh+='<tr>'+
-      '<td class="ast-nm"><span class="dot" style="background:'+oPos.color+'"></span>'+oPos.name+chev+ob+'<span class="s">'+fmtMoney2(ov)+'</span></td>'+
-      '<td class="l2"><span>—</span><span class="s">'+frArr.length+' 只</span></td>'+
+    oh+='<tr class="otc-leg">'+
+      '<td class="ast-nm"><span class="dot" style="background:'+oPos.color+'"></span>'+oPos.name+chev+'<span class="s">'+fmtMoney2(ov)+'</span></td>'+
+      '<td class="l2"><span>—</span><span class="s">'+frArr.length+' 只'+(ob?' '+ob:'')+'</span></td>'+
       '<td class="l2"><span class="'+(od>=0?'up':'dn')+'">'+(od>=0?'+':'')+fmtMoney2(od)+'</span><span class="s '+(od>=0?'up':'dn')+'">'+(od>=0?'+':'')+fmtPct(od/(ov-od||1))+'</span></td>'+
       '<td class="l2"><span class="'+(op>=0?'up':'dn')+'">'+(op>=0?'+':'')+fmtMoney2(op)+'</span><span class="s '+(op>=0?'up':'dn')+'">'+(op>=0?'+':'')+fmtPct(oCost>0?op/oCost:0)+'</span></td></tr>';
     if(oOpen){
